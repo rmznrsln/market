@@ -8,14 +8,28 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        header h1 { margin-bottom: 15px; font-size: 1.8rem; }
-        nav { display: flex; gap: 10px; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 20px; border: none; background: #34495e; color: white; cursor: pointer; border-radius: 5px; font-size: 1rem; transition: background 0.3s; }
-        .tab-btn:hover { background: #4a6278; }
-        .tab-btn.active { background: #3498db; }
+
+        /* Header */
+        header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        header h1 { font-size: 1.8rem; }
+
+        /* Hamburger Menu */
+        .menu-toggle { background: none; border: none; cursor: pointer; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .menu-toggle span { display: block; width: 28px; height: 3px; background: white; border-radius: 2px; transition: 0.3s; }
+        .menu-toggle:hover span { background: #3498db; }
+
+        .dropdown-menu { position: absolute; top: 100%; right: 0; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); min-width: 200px; z-index: 100; display: none; margin-top: 10px; overflow: hidden; }
+        .dropdown-menu.active { display: block; }
+        .dropdown-menu button { width: 100%; padding: 15px 20px; border: none; background: white; color: #333; text-align: left; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 10px; transition: background 0.2s; }
+        .dropdown-menu button:hover { background: #f5f5f5; }
+        .dropdown-menu button:not(:last-child) { border-bottom: 1px solid #eee; }
+        .dropdown-menu .menu-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+
+        /* Tab Content */
         .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .tab-content.active { display: block; }
+
+        /* Sales Container */
         .sales-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         @media (max-width: 768px) { .sales-container { grid-template-columns: 1fr; } }
         .barcode-section, .cart-section { background: #f9f9f9; padding: 20px; border-radius: 8px; }
@@ -28,6 +42,8 @@
         .product-info { margin-top: 15px; padding: 15px; background: #e8f6ff; border-radius: 5px; display: flex; justify-content: space-between; font-size: 1.1rem; }
         .product-info.hidden { display: none; }
         #foundProductPrice { font-weight: bold; color: #27ae60; }
+
+        /* Cart */
         .cart-items { min-height: 200px; max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; background: white; margin-bottom: 15px; }
         .empty-cart { text-align: center; color: #999; padding: 50px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
@@ -46,6 +62,8 @@
         .complete-btn { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 1.2rem; cursor: pointer; transition: background 0.3s; }
         .complete-btn:hover:not(:disabled) { background: #219a52; }
         .complete-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        /* Product Form */
         .product-form { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         .product-form h2 { margin-bottom: 15px; color: #2c3e50; }
         .product-form form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
@@ -56,6 +74,11 @@
         .submit-btn { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
         .submit-btn:hover { background: #219a52; }
         .product-list h2 { margin-bottom: 15px; color: #2c3e50; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { padding: 8px 16px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem; }
+        .back-btn:hover { background: #7f8c8d; }
+
+        /* Table */
         table { width: 100%; border-collapse: collapse; background: white; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #2c3e50; color: white; }
@@ -65,6 +88,16 @@
         .delete-btn:hover { background: #c0392b; }
         .detail-btn { background: #3498db; color: white; }
         .detail-btn:hover { background: #2980b9; }
+
+        /* Settings */
+        .settings-section { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .settings-section h3 { margin-bottom: 15px; color: #2c3e50; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .settings-row:last-child { border-bottom: none; }
+        .danger-btn { padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .danger-btn:hover { background: #c0392b; }
+
+        /* Modal */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal.hidden { display: none; }
         .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
@@ -72,6 +105,8 @@
         .close-btn:hover { color: #333; }
         .modal-content h2 { margin-bottom: 20px; color: #2c3e50; }
         #saleDetails table { margin-top: 15px; }
+
+        /* Notification */
         .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 5px; color: white; font-weight: 500; z-index: 1001; animation: slideIn 0.3s ease; }
         .notification.hidden { display: none; }
         .notification.success { background: #27ae60; }
@@ -83,13 +118,19 @@
     <div class="container">
         <header>
             <h1>Market Satis Sistemi</h1>
-            <nav>
-                <button class="tab-btn active" data-tab="sales">Satis</button>
-                <button class="tab-btn" data-tab="products">Urun Yonetimi</button>
-                <button class="tab-btn" data-tab="history">Satis Gecmisi</button>
-            </nav>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <button data-tab="products"><span class="menu-icon">📦</span> Urun Yonetimi</button>
+                <button data-tab="history"><span class="menu-icon">📋</span> Satis Gecmisi</button>
+                <button data-tab="settings"><span class="menu-icon">⚙️</span> Ayarlar</button>
+            </div>
         </header>
 
+        <!-- Satis Ekrani -->
         <section id="sales" class="tab-content active">
             <div class="sales-container">
                 <div class="barcode-section">
@@ -115,9 +156,14 @@
             </div>
         </section>
 
+        <!-- Urun Yonetimi -->
         <section id="products" class="tab-content">
+            <div class="section-header">
+                <h2>Urun Yonetimi</h2>
+                <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
+            </div>
             <div class="product-form">
-                <h2>Yeni Urun Ekle</h2>
+                <h3>Yeni Urun Ekle</h3>
                 <form id="productForm">
                     <div class="form-group">
                         <label for="productBarcode">Barkod</label>
@@ -135,22 +181,55 @@
                 </form>
             </div>
             <div class="product-list">
-                <h2>Kayitli Urunler</h2>
-                <table id="productsTable">
+                <h3>Kayitli Urunler</h3>
+                <table>
                     <thead><tr><th>Barkod</th><th>Urun Adi</th><th>Fiyat</th><th>Islem</th></tr></thead>
                     <tbody id="productsBody"></tbody>
                 </table>
             </div>
         </section>
 
+        <!-- Satis Gecmisi -->
         <section id="history" class="tab-content">
-            <h2>Satis Gecmisi</h2>
-            <table id="salesTable">
+            <div class="section-header">
+                <h2>Satis Gecmisi</h2>
+                <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
+            </div>
+            <table>
                 <thead><tr><th>Satis No</th><th>Tarih</th><th>Toplam</th><th>Detay</th></tr></thead>
                 <tbody id="salesBody"></tbody>
             </table>
         </section>
 
+        <!-- Ayarlar -->
+        <section id="settings" class="tab-content">
+            <div class="section-header">
+                <h2>Ayarlar</h2>
+                <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
+            </div>
+            <div class="settings-section">
+                <h3>Veri Yonetimi</h3>
+                <div class="settings-row">
+                    <span>Tum urunleri sil</span>
+                    <button class="danger-btn" onclick="clearAllProducts()">Urunleri Temizle</button>
+                </div>
+                <div class="settings-row">
+                    <span>Tum satis gecmisini sil</span>
+                    <button class="danger-btn" onclick="clearAllSales()">Gecmisi Temizle</button>
+                </div>
+                <div class="settings-row">
+                    <span>Tum verileri sil</span>
+                    <button class="danger-btn" onclick="clearAllData()">Hepsini Temizle</button>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h3>Hakkinda</h3>
+                <p>Market Satis Sistemi v1.0</p>
+                <p style="color:#666; margin-top:5px;">Veriler bu tarayicida saklanmaktadir.</p>
+            </div>
+        </section>
+
+        <!-- Modal -->
         <div id="saleModal" class="modal hidden">
             <div class="modal-content">
                 <span class="close-btn">&times;</span>
@@ -162,7 +241,6 @@
     </div>
 
 <script>
-// Veri yonetimi - localStorage
 const DB = {
     getProducts: () => JSON.parse(localStorage.getItem('market_products') || '[]'),
     saveProducts: (data) => localStorage.setItem('market_products', JSON.stringify(data)),
@@ -174,7 +252,8 @@ let cart = [];
 let nextSaleId = parseInt(localStorage.getItem('market_next_sale_id') || '1');
 
 const elements = {
-    tabBtns: document.querySelectorAll('.tab-btn'),
+    menuToggle: document.getElementById('menuToggle'),
+    dropdownMenu: document.getElementById('dropdownMenu'),
     tabContents: document.querySelectorAll('.tab-content'),
     barcodeInput: document.getElementById('barcodeInput'),
     addToCartBtn: document.getElementById('addToCartBtn'),
@@ -196,19 +275,36 @@ const elements = {
     notification: document.getElementById('notification')
 };
 
-// Tab degistirme
-elements.tabBtns.forEach(btn => {
+// Menu toggle
+elements.menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    elements.dropdownMenu.classList.toggle('active');
+});
+
+document.addEventListener('click', () => {
+    elements.dropdownMenu.classList.remove('active');
+});
+
+elements.dropdownMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+
+// Menu items
+document.querySelectorAll('.dropdown-menu button').forEach(btn => {
     btn.addEventListener('click', () => {
-        elements.tabBtns.forEach(b => b.classList.remove('active'));
-        elements.tabContents.forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
         const tabId = btn.dataset.tab;
-        document.getElementById(tabId).classList.add('active');
-        if (tabId === 'products') loadProducts();
-        if (tabId === 'history') loadSalesHistory();
-        if (tabId === 'sales') elements.barcodeInput.focus();
+        showTab(tabId);
+        elements.dropdownMenu.classList.remove('active');
     });
 });
+
+function showTab(tabId) {
+    elements.tabContents.forEach(c => c.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    if (tabId === 'products') loadProducts();
+    if (tabId === 'history') loadSalesHistory();
+    if (tabId === 'sales') elements.barcodeInput.focus();
+}
 
 function showNotification(message, type = 'success') {
     elements.notification.textContent = message;
@@ -223,13 +319,11 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Urun ara
 function searchProduct(barcode) {
     const products = DB.getProducts();
     return products.find(p => p.barcode === barcode) || null;
 }
 
-// Sepete ekle
 function addToCart() {
     const barcode = elements.barcodeInput.value.trim();
     if (!barcode) return;
@@ -336,7 +430,6 @@ function completeSale() {
     elements.productInfo.classList.add('hidden');
 }
 
-// Urun yonetimi
 function loadProducts() {
     const products = DB.getProducts();
     if (products.length === 0) {
@@ -391,7 +484,6 @@ function deleteProduct(id) {
     loadProducts();
 }
 
-// Satis gecmisi
 function loadSalesHistory() {
     const sales = DB.getSales();
     if (sales.length === 0) {
@@ -440,6 +532,30 @@ function showSaleDetail(id) {
     html += '</tbody></table>';
     elements.saleDetails.innerHTML = html;
     elements.saleModal.classList.remove('hidden');
+}
+
+// Ayarlar - Temizleme
+function clearAllProducts() {
+    if (!confirm('Tum urunler silinecek. Emin misiniz?')) return;
+    DB.saveProducts([]);
+    showNotification('Tum urunler silindi!');
+}
+
+function clearAllSales() {
+    if (!confirm('Tum satis gecmisi silinecek. Emin misiniz?')) return;
+    DB.saveSales([]);
+    localStorage.setItem('market_next_sale_id', '1');
+    nextSaleId = 1;
+    showNotification('Satis gecmisi temizlendi!');
+}
+
+function clearAllData() {
+    if (!confirm('TUM VERILER silinecek! Bu islem geri alinamaz. Emin misiniz?')) return;
+    localStorage.removeItem('market_products');
+    localStorage.removeItem('market_sales');
+    localStorage.removeItem('market_next_sale_id');
+    nextSaleId = 1;
+    showNotification('Tum veriler silindi!');
 }
 
 // Event listeners
