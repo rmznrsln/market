@@ -2,8 +2,8 @@
 
 // API URL'leri
 const API = {
-    products: 'index.php?action=products',
-    sales: 'index.php?action=sales'
+    products: 'api/products.php',
+    sales: 'api/sales.php'
 };
 
 // Sepet
@@ -98,7 +98,7 @@ async function apiRequest(url, method = 'GET', data = null) {
 // Barkod ile Ürün Ara
 async function searchProduct(barcode) {
     try {
-        const product = await apiRequest(`${API.products}&barcode=${encodeURIComponent(barcode)}`);
+        const product = await apiRequest(`${API.products}?barcode=${encodeURIComponent(barcode)}`);
         return product;
     } catch (error) {
         return null;
@@ -321,7 +321,7 @@ function renderSalesHistory(sales) {
 // Satış Detayı Göster
 async function showSaleDetail(id) {
     try {
-        const sale = await apiRequest(`${API.sales}&id=${id}`);
+        const sale = await apiRequest(`${API.sales}?id=${id}`);
         const date = new Date(sale.created_at).toLocaleString('tr-TR');
 
         let html = `
