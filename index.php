@@ -1,3 +1,172 @@
+<?php
+/**
+ * Market Satış Sistemi
+ * API ve Frontend tek dosyada
+ */
+
+// Veritabanı ayarları
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'market_db');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_CHARSET', 'utf8mb4');
+
+// PDO bağlantısı
+function getDB() {
+    static $pdo = null;
+    if ($pdo === null) {
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            die(json_encode(['error' => 'Veritabanı bağlantı hatası: ' . $e->getMessage()]));
+        }
+    }
+    return $pdo;
+}
+
+// JSON yanıt
+function jsonResponse($data, $status = 200) {
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// API İstekleri
+if (isset($_GET['action'])) {
+    $action = $_GET['action'];
+    $method = $_SERVER['REQUEST_METHOD'];
+    $pdo = getDB();
+
+    // CORS
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+
+    if ($method === 'OPTIONS') exit(0);
+
+    // === ÜRÜN API ===
+    if ($action === 'products') {
+        switch ($method) {
+            case 'GET':
+                if (isset($_GET['barcode'])) {
+                    $stmt = $pdo->prepare("SELECT * FROM products WHERE barcode = ?");
+                    $stmt->execute([trim($_GET['barcode'])]);
+                    $product = $stmt->fetch();
+                    if ($product) jsonResponse($product);
+                    else jsonResponse(['error' => 'Ürün bulunamadı'], 404);
+                } else {
+                    $stmt = $pdo->query("SELECT * FROM products ORDER BY name ASC");
+                    jsonResponse($stmt->fetchAll());
+                }
+                break;
+
+            case 'POST':
+                $input = json_decode(file_get_contents('php://input'), true);
+                if (empty($input['barcode']) || empty($input['name']) || !isset($input['price'])) {
+                    jsonResponse(['error' => 'Barkod, ürün adı ve fiyat zorunludur'], 400);
+                }
+                $barcode = trim($input['barcode']);
+                $name = trim($input['name']);
+                $price = floatval($input['price']);
+
+                $stmt = $pdo->prepare("SELECT id FROM products WHERE barcode = ?");
+                $stmt->execute([$barcode]);
+                if ($stmt->fetch()) {
+                    jsonResponse(['error' => 'Bu barkod zaten kayıtlı'], 409);
+                }
+
+                $stmt = $pdo->prepare("INSERT INTO products (barcode, name, price) VALUES (?, ?, ?)");
+                $stmt->execute([$barcode, $name, $price]);
+                jsonResponse(['success' => true, 'message' => 'Ürün eklendi', 'id' => $pdo->lastInsertId()], 201);
+                break;
+
+            case 'DELETE':
+                $input = json_decode(file_get_contents('php://input'), true);
+                if (empty($input['id'])) jsonResponse(['error' => 'ID zorunlu'], 400);
+
+                $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
+                $stmt->execute([intval($input['id'])]);
+                if ($stmt->rowCount() === 0) jsonResponse(['error' => 'Ürün bulunamadı'], 404);
+                jsonResponse(['success' => true, 'message' => 'Ürün silindi']);
+                break;
+        }
+    }
+
+    // === SATIŞ API ===
+    if ($action === 'sales') {
+        switch ($method) {
+            case 'GET':
+                if (isset($_GET['id'])) {
+                    $id = intval($_GET['id']);
+                    $stmt = $pdo->prepare("SELECT * FROM sales WHERE id = ?");
+                    $stmt->execute([$id]);
+                    $sale = $stmt->fetch();
+                    if (!$sale) jsonResponse(['error' => 'Satış bulunamadı'], 404);
+
+                    $stmt = $pdo->prepare("SELECT * FROM sale_items WHERE sale_id = ?");
+                    $stmt->execute([$id]);
+                    $sale['items'] = $stmt->fetchAll();
+                    jsonResponse($sale);
+                } else {
+                    $stmt = $pdo->query("SELECT * FROM sales ORDER BY created_at DESC LIMIT 50");
+                    jsonResponse($stmt->fetchAll());
+                }
+                break;
+
+            case 'POST':
+                $input = json_decode(file_get_contents('php://input'), true);
+                if (empty($input['items'])) jsonResponse(['error' => 'Sepet boş'], 400);
+
+                $pdo->beginTransaction();
+                try {
+                    $totalAmount = 0;
+                    foreach ($input['items'] as $item) {
+                        $totalAmount += floatval($item['total_price']);
+                    }
+
+                    $stmt = $pdo->prepare("INSERT INTO sales (total_amount) VALUES (?)");
+                    $stmt->execute([$totalAmount]);
+                    $saleId = $pdo->lastInsertId();
+
+                    $stmt = $pdo->prepare(
+                        "INSERT INTO sale_items (sale_id, product_id, product_name, product_barcode, quantity, unit_price, total_price)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    );
+
+                    foreach ($input['items'] as $item) {
+                        $stmt->execute([
+                            $saleId,
+                            intval($item['product_id']),
+                            $item['product_name'],
+                            $item['product_barcode'],
+                            intval($item['quantity']),
+                            floatval($item['unit_price']),
+                            floatval($item['total_price'])
+                        ]);
+                    }
+
+                    $pdo->commit();
+                    jsonResponse(['success' => true, 'sale_id' => $saleId, 'total_amount' => $totalAmount], 201);
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    jsonResponse(['error' => 'Satış kaydedilemedi'], 500);
+                }
+                break;
+        }
+    }
+
+    jsonResponse(['error' => 'Geçersiz istek'], 400);
+}
+
+// HTML Sayfası
+?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
