@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Satis Sistemi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
@@ -65,7 +66,7 @@
 
         /* Product Form */
         .product-form { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .product-form h2 { margin-bottom: 15px; color: #2c3e50; }
+        .product-form h2, .product-form h3 { margin-bottom: 15px; color: #2c3e50; }
         .product-form form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 5px; font-weight: 500; }
@@ -73,8 +74,8 @@
         .form-group input:focus { border-color: #3498db; outline: none; }
         .submit-btn { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
         .submit-btn:hover { background: #219a52; }
-        .product-list h2 { margin-bottom: 15px; color: #2c3e50; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .product-list h2, .product-list h3 { margin-bottom: 15px; color: #2c3e50; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .back-btn { padding: 8px 16px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem; }
         .back-btn:hover { background: #7f8c8d; }
 
@@ -92,10 +93,20 @@
         /* Settings */
         .settings-section { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
         .settings-section h3 { margin-bottom: 15px; color: #2c3e50; }
-        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
         .settings-row:last-child { border-bottom: none; }
+        .settings-row span { flex: 1; }
         .danger-btn { padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; }
         .danger-btn:hover { background: #c0392b; }
+        .success-btn { padding: 8px 16px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .success-btn:hover { background: #219a52; }
+        .primary-btn { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .primary-btn:hover { background: #2980b9; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* File Input */
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
+        .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 
         /* Modal */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -207,8 +218,32 @@
                 <h2>Ayarlar</h2>
                 <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
             </div>
+
             <div class="settings-section">
-                <h3>Veri Yonetimi</h3>
+                <h3>Excel Veri Yonetimi</h3>
+                <div class="settings-row">
+                    <span>Tum verileri Excel'e aktar (Urunler + Satislar)</span>
+                    <button class="success-btn" onclick="exportToExcel()">Excel'e Aktar</button>
+                </div>
+                <div class="settings-row">
+                    <span>Excel'den verileri ice aktar</span>
+                    <div class="file-input-wrapper">
+                        <button class="primary-btn">Excel'den Yukle</button>
+                        <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="importFromExcel(event)">
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <span>Sadece urunleri Excel'e aktar</span>
+                    <button class="success-btn" onclick="exportProductsToExcel()">Urunleri Aktar</button>
+                </div>
+                <div class="settings-row">
+                    <span>Sadece satislari Excel'e aktar</span>
+                    <button class="success-btn" onclick="exportSalesToExcel()">Satislari Aktar</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Veri Temizleme</h3>
                 <div class="settings-row">
                     <span>Tum urunleri sil</span>
                     <button class="danger-btn" onclick="clearAllProducts()">Urunleri Temizle</button>
@@ -222,10 +257,12 @@
                     <button class="danger-btn" onclick="clearAllData()">Hepsini Temizle</button>
                 </div>
             </div>
+
             <div class="settings-section">
                 <h3>Hakkinda</h3>
-                <p>Market Satis Sistemi v1.0</p>
+                <p>Market Satis Sistemi v1.1</p>
                 <p style="color:#666; margin-top:5px;">Veriler bu tarayicida saklanmaktadir.</p>
+                <p style="color:#666; margin-top:5px;">Excel'e aktararak yedek alabilirsiniz.</p>
             </div>
         </section>
 
@@ -289,7 +326,6 @@ elements.dropdownMenu.addEventListener('click', (e) => {
     e.stopPropagation();
 });
 
-// Menu items
 document.querySelectorAll('.dropdown-menu button').forEach(btn => {
     btn.addEventListener('click', () => {
         const tabId = btn.dataset.tab;
@@ -534,11 +570,223 @@ function showSaleDetail(id) {
     elements.saleModal.classList.remove('hidden');
 }
 
-// Ayarlar - Temizleme
+// ============ EXCEL FONKSIYONLARI ============
+
+// Tum verileri Excel'e aktar
+function exportToExcel() {
+    const products = DB.getProducts();
+    const sales = DB.getSales();
+
+    const wb = XLSX.utils.book_new();
+
+    // Urunler sayfasi
+    const productData = products.map(p => ({
+        'Barkod': p.barcode,
+        'Urun Adi': p.name,
+        'Fiyat': p.price
+    }));
+    if (productData.length === 0) {
+        productData.push({ 'Barkod': '', 'Urun Adi': '', 'Fiyat': '' });
+    }
+    const wsProducts = XLSX.utils.json_to_sheet(productData);
+    XLSX.utils.book_append_sheet(wb, wsProducts, 'Urunler');
+
+    // Satislar sayfasi
+    const salesData = [];
+    sales.forEach(sale => {
+        sale.items.forEach((item, idx) => {
+            salesData.push({
+                'Satis No': sale.id,
+                'Tarih': new Date(sale.created_at).toLocaleString('tr-TR'),
+                'Urun Barkod': item.product_barcode,
+                'Urun Adi': item.product_name,
+                'Adet': item.quantity,
+                'Birim Fiyat': item.unit_price,
+                'Toplam': item.total_price,
+                'Satis Toplami': idx === 0 ? sale.total_amount : ''
+            });
+        });
+    });
+    if (salesData.length === 0) {
+        salesData.push({ 'Satis No': '', 'Tarih': '', 'Urun Barkod': '', 'Urun Adi': '', 'Adet': '', 'Birim Fiyat': '', 'Toplam': '', 'Satis Toplami': '' });
+    }
+    const wsSales = XLSX.utils.json_to_sheet(salesData);
+    XLSX.utils.book_append_sheet(wb, wsSales, 'Satislar');
+
+    // Ayarlar sayfasi (next sale id)
+    const wsConfig = XLSX.utils.json_to_sheet([{ 'Ayar': 'SonrakiSatisNo', 'Deger': nextSaleId }]);
+    XLSX.utils.book_append_sheet(wb, wsConfig, 'Ayarlar');
+
+    const fileName = `market_verileri_${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    showNotification('Veriler Excel dosyasina aktarildi!');
+}
+
+// Sadece urunleri Excel'e aktar
+function exportProductsToExcel() {
+    const products = DB.getProducts();
+    const productData = products.map(p => ({
+        'Barkod': p.barcode,
+        'Urun Adi': p.name,
+        'Fiyat': p.price
+    }));
+
+    if (productData.length === 0) {
+        showNotification('Aktarilacak urun yok!', 'error');
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(productData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Urunler');
+
+    const fileName = `urunler_${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    showNotification('Urunler Excel dosyasina aktarildi!');
+}
+
+// Sadece satislari Excel'e aktar
+function exportSalesToExcel() {
+    const sales = DB.getSales();
+    const salesData = [];
+
+    sales.forEach(sale => {
+        sale.items.forEach((item, idx) => {
+            salesData.push({
+                'Satis No': sale.id,
+                'Tarih': new Date(sale.created_at).toLocaleString('tr-TR'),
+                'Urun Barkod': item.product_barcode,
+                'Urun Adi': item.product_name,
+                'Adet': item.quantity,
+                'Birim Fiyat': item.unit_price,
+                'Toplam': item.total_price,
+                'Satis Toplami': idx === 0 ? sale.total_amount : ''
+            });
+        });
+    });
+
+    if (salesData.length === 0) {
+        showNotification('Aktarilacak satis yok!', 'error');
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(salesData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Satislar');
+
+    const fileName = `satislar_${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    showNotification('Satislar Excel dosyasina aktarildi!');
+}
+
+// Excel'den verileri ice aktar
+function importFromExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            // Urunler sayfasini oku
+            if (workbook.SheetNames.includes('Urunler')) {
+                const wsProducts = workbook.Sheets['Urunler'];
+                const productsData = XLSX.utils.sheet_to_json(wsProducts);
+
+                const products = [];
+                let maxId = 0;
+                productsData.forEach((row, index) => {
+                    if (row['Barkod'] && row['Urun Adi']) {
+                        const id = index + 1;
+                        maxId = Math.max(maxId, id);
+                        products.push({
+                            id: id,
+                            barcode: String(row['Barkod']),
+                            name: String(row['Urun Adi']),
+                            price: parseFloat(row['Fiyat']) || 0
+                        });
+                    }
+                });
+                DB.saveProducts(products);
+            }
+
+            // Satislar sayfasini oku
+            if (workbook.SheetNames.includes('Satislar')) {
+                const wsSales = workbook.Sheets['Satislar'];
+                const salesData = XLSX.utils.sheet_to_json(wsSales);
+
+                const salesMap = new Map();
+                let maxSaleId = 0;
+
+                salesData.forEach(row => {
+                    if (!row['Satis No']) return;
+
+                    const saleId = parseInt(row['Satis No']);
+                    maxSaleId = Math.max(maxSaleId, saleId);
+
+                    if (!salesMap.has(saleId)) {
+                        salesMap.set(saleId, {
+                            id: saleId,
+                            total_amount: parseFloat(row['Satis Toplami']) || 0,
+                            created_at: row['Tarih'] ? new Date(row['Tarih']).toISOString() : new Date().toISOString(),
+                            items: []
+                        });
+                    }
+
+                    const sale = salesMap.get(saleId);
+                    if (row['Urun Barkod']) {
+                        sale.items.push({
+                            product_barcode: String(row['Urun Barkod']),
+                            product_name: String(row['Urun Adi'] || ''),
+                            quantity: parseInt(row['Adet']) || 1,
+                            unit_price: parseFloat(row['Birim Fiyat']) || 0,
+                            total_price: parseFloat(row['Toplam']) || 0
+                        });
+                    }
+
+                    // Satis toplamini guncelle
+                    if (row['Satis Toplami']) {
+                        sale.total_amount = parseFloat(row['Satis Toplami']);
+                    }
+                });
+
+                const sales = Array.from(salesMap.values()).sort((a, b) => b.id - a.id);
+                DB.saveSales(sales);
+
+                nextSaleId = maxSaleId + 1;
+                localStorage.setItem('market_next_sale_id', nextSaleId.toString());
+            }
+
+            // Ayarlar sayfasini oku
+            if (workbook.SheetNames.includes('Ayarlar')) {
+                const wsConfig = workbook.Sheets['Ayarlar'];
+                const configData = XLSX.utils.sheet_to_json(wsConfig);
+                configData.forEach(row => {
+                    if (row['Ayar'] === 'SonrakiSatisNo' && row['Deger']) {
+                        nextSaleId = parseInt(row['Deger']);
+                        localStorage.setItem('market_next_sale_id', nextSaleId.toString());
+                    }
+                });
+            }
+
+            showNotification('Veriler Excel dosyasindan yuklendi!');
+            event.target.value = ''; // Input'u temizle
+        } catch (err) {
+            console.error(err);
+            showNotification('Excel dosyasi okunamadi!', 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// Temizleme fonksiyonlari
 function clearAllProducts() {
     if (!confirm('Tum urunler silinecek. Emin misiniz?')) return;
     DB.saveProducts([]);
     showNotification('Tum urunler silindi!');
+    loadProducts();
 }
 
 function clearAllSales() {
