@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Satis Sistemi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        header h1 { margin-bottom: 15px; font-size: 1.8rem; }
+        nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; border: none; background: #34495e; color: white; cursor: pointer; border-radius: 5px; font-size: 1rem; transition: background 0.3s; }
+        .tab-btn:hover { background: #4a6278; }
+        .tab-btn.active { background: #3498db; }
+        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+        .sales-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 768px) { .sales-container { grid-template-columns: 1fr; } }
+        .barcode-section, .cart-section { background: #f9f9f9; padding: 20px; border-radius: 8px; }
+        .barcode-section h2, .cart-section h2 { margin-bottom: 15px; color: #2c3e50; }
+        .input-group { display: flex; gap: 10px; }
+        .input-group input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1.1rem; }
+        .input-group input:focus { border-color: #3498db; outline: none; }
+        .input-group button { padding: 12px 25px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        .input-group button:hover { background: #2980b9; }
+        .product-info { margin-top: 15px; padding: 15px; background: #e8f6ff; border-radius: 5px; display: flex; justify-content: space-between; font-size: 1.1rem; }
+        .product-info.hidden { display: none; }
+        #foundProductPrice { font-weight: bold; color: #27ae60; }
+        .cart-items { min-height: 200px; max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; background: white; margin-bottom: 15px; }
+        .empty-cart { text-align: center; color: #999; padding: 50px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-weight: 500; }
+        .cart-item-price { color: #666; font-size: 0.9rem; }
+        .cart-item-qty { display: flex; align-items: center; gap: 8px; margin: 0 15px; }
+        .cart-item-qty button { width: 28px; height: 28px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        .cart-item-qty button:hover { background: #2980b9; }
+        .cart-item-qty span { min-width: 30px; text-align: center; }
+        .cart-item-total { font-weight: bold; min-width: 80px; text-align: right; }
+        .remove-item { background: #e74c3c !important; margin-left: 10px; }
+        .remove-item:hover { background: #c0392b !important; }
+        .cart-total { display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: bold; padding: 15px; background: #2c3e50; color: white; border-radius: 5px; margin-bottom: 15px; }
+        .complete-btn { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 1.2rem; cursor: pointer; transition: background 0.3s; }
+        .complete-btn:hover:not(:disabled) { background: #219a52; }
+        .complete-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .product-form { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .product-form h2 { margin-bottom: 15px; color: #2c3e50; }
+        .product-form form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: 500; }
+        .form-group input { padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .form-group input:focus { border-color: #3498db; outline: none; }
+        .submit-btn { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        .submit-btn:hover { background: #219a52; }
+        .product-list h2 { margin-bottom: 15px; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #2c3e50; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .delete-btn, .detail-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .delete-btn { background: #e74c3c; color: white; }
+        .delete-btn:hover { background: #c0392b; }
+        .detail-btn { background: #3498db; color: white; }
+        .detail-btn:hover { background: #2980b9; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal.hidden { display: none; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #999; }
+        .close-btn:hover { color: #333; }
+        .modal-content h2 { margin-bottom: 20px; color: #2c3e50; }
+        #saleDetails table { margin-top: 15px; }
+        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 5px; color: white; font-weight: 500; z-index: 1001; animation: slideIn 0.3s ease; }
+        .notification.hidden { display: none; }
+        .notification.success { background: #27ae60; }
+        .notification.error { background: #e74c3c; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Market Satis Sistemi</h1>
+            <nav>
+                <button class="tab-btn active" data-tab="sales">Satis</button>
+                <button class="tab-btn" data-tab="products">Urun Yonetimi</button>
+                <button class="tab-btn" data-tab="history">Satis Gecmisi</button>
+            </nav>
+        </header>
+
+        <section id="sales" class="tab-content active">
+            <div class="sales-container">
+                <div class="barcode-section">
+                    <h2>Barkod Okut</h2>
+                    <div class="input-group">
+                        <input type="text" id="barcodeInput" placeholder="Barkod okutun veya girin..." autofocus>
+                        <button id="addToCartBtn">Ekle</button>
+                    </div>
+                    <div id="productInfo" class="product-info hidden">
+                        <span id="foundProductName"></span>
+                        <span id="foundProductPrice"></span>
+                    </div>
+                </div>
+                <div class="cart-section">
+                    <h2>Sepet</h2>
+                    <div class="cart-items" id="cartItems"><p class="empty-cart">Sepet bos</p></div>
+                    <div class="cart-total">
+                        <span>Toplam:</span>
+                        <span id="cartTotal">0.00 TL</span>
+                    </div>
+                    <button id="completeSaleBtn" class="complete-btn" disabled>Satisi Tamamla</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="tab-content">
+            <div class="product-form">
+                <h2>Yeni Urun Ekle</h2>
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productBarcode">Barkod</label>
+                        <input type="text" id="productBarcode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productName">Urun Adi</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Fiyat (TL)</label>
+                        <input type="number" id="productPrice" step="0.01" min="0" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Urun Ekle</button>
+                </form>
+            </div>
+            <div class="product-list">
+                <h2>Kayitli Urunler</h2>
+                <table id="productsTable">
+                    <thead><tr><th>Barkod</th><th>Urun Adi</th><th>Fiyat</th><th>Islem</th></tr></thead>
+                    <tbody id="productsBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="history" class="tab-content">
+            <h2>Satis Gecmisi</h2>
+            <table id="salesTable">
+                <thead><tr><th>Satis No</th><th>Tarih</th><th>Toplam</th><th>Detay</th></tr></thead>
+                <tbody id="salesBody"></tbody>
+            </table>
+        </section>
+
+        <div id="saleModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Satis Detayi</h2>
+                <div id="saleDetails"></div>
+            </div>
+        </div>
+        <div id="notification" class="notification hidden"></div>
+    </div>
+
+<script>
+// Veri yonetimi - localStorage
+const DB = {
+    getProducts: () => JSON.parse(localStorage.getItem('market_products') || '[]'),
+    saveProducts: (data) => localStorage.setItem('market_products', JSON.stringify(data)),
+    getSales: () => JSON.parse(localStorage.getItem('market_sales') || '[]'),
+    saveSales: (data) => localStorage.setItem('market_sales', JSON.stringify(data))
+};
+
+let cart = [];
+let nextSaleId = parseInt(localStorage.getItem('market_next_sale_id') || '1');
+
+const elements = {
+    tabBtns: document.querySelectorAll('.tab-btn'),
+    tabContents: document.querySelectorAll('.tab-content'),
+    barcodeInput: document.getElementById('barcodeInput'),
+    addToCartBtn: document.getElementById('addToCartBtn'),
+    productInfo: document.getElementById('productInfo'),
+    foundProductName: document.getElementById('foundProductName'),
+    foundProductPrice: document.getElementById('foundProductPrice'),
+    cartItems: document.getElementById('cartItems'),
+    cartTotal: document.getElementById('cartTotal'),
+    completeSaleBtn: document.getElementById('completeSaleBtn'),
+    productForm: document.getElementById('productForm'),
+    productBarcode: document.getElementById('productBarcode'),
+    productName: document.getElementById('productName'),
+    productPrice: document.getElementById('productPrice'),
+    productsBody: document.getElementById('productsBody'),
+    salesBody: document.getElementById('salesBody'),
+    saleModal: document.getElementById('saleModal'),
+    saleDetails: document.getElementById('saleDetails'),
+    closeBtn: document.querySelector('.close-btn'),
+    notification: document.getElementById('notification')
+};
+
+// Tab degistirme
+elements.tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        elements.tabBtns.forEach(b => b.classList.remove('active'));
+        elements.tabContents.forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const tabId = btn.dataset.tab;
+        document.getElementById(tabId).classList.add('active');
+        if (tabId === 'products') loadProducts();
+        if (tabId === 'history') loadSalesHistory();
+        if (tabId === 'sales') elements.barcodeInput.focus();
+    });
+});
+
+function showNotification(message, type = 'success') {
+    elements.notification.textContent = message;
+    elements.notification.className = `notification ${type}`;
+    elements.notification.classList.remove('hidden');
+    setTimeout(() => elements.notification.classList.add('hidden'), 3000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Urun ara
+function searchProduct(barcode) {
+    const products = DB.getProducts();
+    return products.find(p => p.barcode === barcode) || null;
+}
+
+// Sepete ekle
+function addToCart() {
+    const barcode = elements.barcodeInput.value.trim();
+    if (!barcode) return;
+
+    const product = searchProduct(barcode);
+    if (!product) {
+        showNotification('Urun bulunamadi!', 'error');
+        elements.productInfo.classList.add('hidden');
+        return;
+    }
+
+    elements.foundProductName.textContent = product.name;
+    elements.foundProductPrice.textContent = `${parseFloat(product.price).toFixed(2)} TL`;
+    elements.productInfo.classList.remove('hidden');
+
+    const existingItem = cart.find(item => item.product_id === product.id);
+    if (existingItem) {
+        existingItem.quantity++;
+        existingItem.total_price = existingItem.quantity * existingItem.unit_price;
+    } else {
+        cart.push({
+            product_id: product.id,
+            product_name: product.name,
+            product_barcode: product.barcode,
+            quantity: 1,
+            unit_price: parseFloat(product.price),
+            total_price: parseFloat(product.price)
+        });
+    }
+
+    renderCart();
+    elements.barcodeInput.value = '';
+    elements.barcodeInput.focus();
+}
+
+function renderCart() {
+    if (cart.length === 0) {
+        elements.cartItems.innerHTML = '<p class="empty-cart">Sepet bos</p>';
+        elements.cartTotal.textContent = '0.00 TL';
+        elements.completeSaleBtn.disabled = true;
+        return;
+    }
+
+    let html = '';
+    let total = 0;
+    cart.forEach((item, index) => {
+        total += item.total_price;
+        html += `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${escapeHtml(item.product_name)}</div>
+                    <div class="cart-item-price">${item.unit_price.toFixed(2)} TL</div>
+                </div>
+                <div class="cart-item-qty">
+                    <button onclick="updateQuantity(${index}, -1)">-</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="updateQuantity(${index}, 1)">+</button>
+                </div>
+                <div class="cart-item-total">${item.total_price.toFixed(2)} TL</div>
+                <button class="cart-item-qty remove-item" onclick="removeFromCart(${index})">X</button>
+            </div>
+        `;
+    });
+    elements.cartItems.innerHTML = html;
+    elements.cartTotal.textContent = `${total.toFixed(2)} TL`;
+    elements.completeSaleBtn.disabled = false;
+}
+
+function updateQuantity(index, change) {
+    cart[index].quantity += change;
+    if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+    } else {
+        cart[index].total_price = cart[index].quantity * cart[index].unit_price;
+    }
+    renderCart();
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderCart();
+}
+
+function completeSale() {
+    if (cart.length === 0) return;
+
+    const sales = DB.getSales();
+    const totalAmount = cart.reduce((sum, item) => sum + item.total_price, 0);
+
+    const sale = {
+        id: nextSaleId++,
+        total_amount: totalAmount,
+        created_at: new Date().toISOString(),
+        items: [...cart]
+    };
+
+    sales.unshift(sale);
+    DB.saveSales(sales);
+    localStorage.setItem('market_next_sale_id', nextSaleId.toString());
+
+    showNotification(`Satis tamamlandi! Toplam: ${totalAmount.toFixed(2)} TL`);
+    cart = [];
+    renderCart();
+    elements.productInfo.classList.add('hidden');
+}
+
+// Urun yonetimi
+function loadProducts() {
+    const products = DB.getProducts();
+    if (products.length === 0) {
+        elements.productsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Henuz urun eklenmemis</td></tr>';
+        return;
+    }
+    let html = '';
+    products.forEach(product => {
+        html += `
+            <tr>
+                <td>${escapeHtml(product.barcode)}</td>
+                <td>${escapeHtml(product.name)}</td>
+                <td>${parseFloat(product.price).toFixed(2)} TL</td>
+                <td><button class="delete-btn" onclick="deleteProduct(${product.id})">Sil</button></td>
+            </tr>
+        `;
+    });
+    elements.productsBody.innerHTML = html;
+}
+
+function addProduct(e) {
+    e.preventDefault();
+    const barcode = elements.productBarcode.value.trim();
+    const name = elements.productName.value.trim();
+    const price = parseFloat(elements.productPrice.value);
+
+    if (!barcode || !name || isNaN(price)) {
+        showNotification('Tum alanlari doldurun!', 'error');
+        return;
+    }
+
+    const products = DB.getProducts();
+    if (products.find(p => p.barcode === barcode)) {
+        showNotification('Bu barkod zaten kayitli!', 'error');
+        return;
+    }
+
+    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+    products.push({ id: newId, barcode, name, price });
+    DB.saveProducts(products);
+
+    showNotification('Urun basariyla eklendi!');
+    elements.productForm.reset();
+    loadProducts();
+}
+
+function deleteProduct(id) {
+    if (!confirm('Bu urunu silmek istediginize emin misiniz?')) return;
+    const products = DB.getProducts().filter(p => p.id !== id);
+    DB.saveProducts(products);
+    showNotification('Urun silindi!');
+    loadProducts();
+}
+
+// Satis gecmisi
+function loadSalesHistory() {
+    const sales = DB.getSales();
+    if (sales.length === 0) {
+        elements.salesBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Henuz satis yapilmamis</td></tr>';
+        return;
+    }
+    let html = '';
+    sales.forEach(sale => {
+        const date = new Date(sale.created_at).toLocaleString('tr-TR');
+        html += `
+            <tr>
+                <td>#${sale.id}</td>
+                <td>${date}</td>
+                <td>${parseFloat(sale.total_amount).toFixed(2)} TL</td>
+                <td><button class="detail-btn" onclick="showSaleDetail(${sale.id})">Detay</button></td>
+            </tr>
+        `;
+    });
+    elements.salesBody.innerHTML = html;
+}
+
+function showSaleDetail(id) {
+    const sales = DB.getSales();
+    const sale = sales.find(s => s.id === id);
+    if (!sale) return;
+
+    const date = new Date(sale.created_at).toLocaleString('tr-TR');
+    let html = `
+        <p><strong>Satis No:</strong> #${sale.id}</p>
+        <p><strong>Tarih:</strong> ${date}</p>
+        <p><strong>Toplam:</strong> ${parseFloat(sale.total_amount).toFixed(2)} TL</p>
+        <table>
+            <thead><tr><th>Urun</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
+            <tbody>
+    `;
+    sale.items.forEach(item => {
+        html += `
+            <tr>
+                <td>${escapeHtml(item.product_name)}</td>
+                <td>${item.quantity}</td>
+                <td>${parseFloat(item.unit_price).toFixed(2)} TL</td>
+                <td>${parseFloat(item.total_price).toFixed(2)} TL</td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table>';
+    elements.saleDetails.innerHTML = html;
+    elements.saleModal.classList.remove('hidden');
+}
+
+// Event listeners
+elements.addToCartBtn.addEventListener('click', addToCart);
+elements.barcodeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addToCart(); });
+elements.completeSaleBtn.addEventListener('click', completeSale);
+elements.productForm.addEventListener('submit', addProduct);
+elements.closeBtn.addEventListener('click', () => elements.saleModal.classList.add('hidden'));
+elements.saleModal.addEventListener('click', (e) => { if (e.target === elements.saleModal) elements.saleModal.classList.add('hidden'); });
+
+document.addEventListener('DOMContentLoaded', () => elements.barcodeInput.focus());
+</script>
+</body>
+</html>
