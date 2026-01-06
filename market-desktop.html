@@ -202,6 +202,86 @@
                 padding: 3px 6px;
             }
         }
+
+        /* Kasa Toplam Widget */
+        .kasa-widget {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .kasa-widget:hover {
+            transform: scale(1.05);
+        }
+        .kasa-widget .value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Filtre Stilleri */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .cashier-link {
+            color: #3498db;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .cashier-link:hover {
+            color: #2980b9;
+        }
+
+        /* Kasa Raporu */
+        .kasa-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .kasa-card {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .kasa-card.green { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .kasa-card.blue { background: linear-gradient(135deg, #3498db, #5dade2); }
+        .kasa-card.orange { background: linear-gradient(135deg, #e67e22, #f39c12); }
+        .kasa-card h4 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .kasa-card .amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -241,7 +321,8 @@
             </div>
             <div class="dropdown-menu" id="dropdownMenu">
                 <button data-tab="products" id="menuProducts"><span class="menu-icon">📦</span> Urun Yonetimi</button>
-                <button data-tab="history" id="menuHistory"><span class="menu-icon">📋</span> Satis Gecmisi</button>
+                <button data-tab="history" id="menuHistory"><span class="menu-icon">📋</span> Satis Gecmisi (Bugun)</button>
+                <button data-tab="kasaraporu" id="menuKasa"><span class="menu-icon">💰</span> Kasa Raporu</button>
                 <button data-tab="settings" id="menuSettings"><span class="menu-icon">⚙️</span> Ayarlar</button>
             </div>
         </header>
@@ -269,6 +350,11 @@
                     <span class="icon">🥇</span>
                     <span class="label">Altın</span>
                     <span class="value" id="goldValue">--</span>
+                </div>
+                <div class="info-widget kasa-widget" id="kasaWidget" onclick="showTab('kasaraporu')" title="Kasa Raporuna Git">
+                    <span class="icon">💰</span>
+                    <span class="label">Bugün</span>
+                    <span class="value" id="todayTotal">0 ₺</span>
                 </div>
             </div>
             <div class="sales-container">
@@ -328,15 +414,59 @@
             </div>
         </section>
 
-        <!-- Satis Gecmisi -->
+        <!-- Satis Gecmisi (Sadece Bugun) -->
         <section id="history" class="tab-content">
             <div class="section-header">
-                <h2>Satis Gecmisi</h2>
+                <h2>Satis Gecmisi (Bugun)</h2>
                 <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
             </div>
+            <div class="filter-bar">
+                <label>Kasiyer:</label>
+                <select id="historyCashierFilter" onchange="loadSalesHistory()">
+                    <option value="">Tumu</option>
+                </select>
+                <span id="historyTotalInfo" style="margin-left:auto; font-weight:bold;"></span>
+            </div>
             <table>
-                <thead><tr><th>Satis No</th><th>Tarih</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
+                <thead><tr><th>Satis No</th><th>Saat</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
                 <tbody id="salesBody"></tbody>
+            </table>
+        </section>
+
+        <!-- Kasa Raporu -->
+        <section id="kasaraporu" class="tab-content">
+            <div class="section-header">
+                <h2>Kasa Raporu</h2>
+                <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
+            </div>
+            <div class="date-filter">
+                <label>Tarih:</label>
+                <input type="date" id="kasaDateFilter" onchange="loadKasaRaporu()">
+                <button class="primary-btn" onclick="setKasaToday()">Bugun</button>
+            </div>
+            <div class="kasa-summary">
+                <div class="kasa-card green">
+                    <h4>Toplam Satis</h4>
+                    <div class="amount" id="kasaToplam">0.00 ₺</div>
+                </div>
+                <div class="kasa-card blue">
+                    <h4>Satis Adedi</h4>
+                    <div class="amount" id="kasaAdet">0</div>
+                </div>
+                <div class="kasa-card orange">
+                    <h4>Ortalama Sepet</h4>
+                    <div class="amount" id="kasaOrtalama">0.00 ₺</div>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <label>Kasiyer:</label>
+                <select id="kasaCashierFilter" onchange="loadKasaRaporu()">
+                    <option value="">Tumu</option>
+                </select>
+            </div>
+            <table>
+                <thead><tr><th>Satis No</th><th>Saat</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
+                <tbody id="kasaBody"></tbody>
             </table>
         </section>
 
@@ -424,8 +554,9 @@
 
             <div class="settings-section">
                 <h3>Hakkinda</h3>
-                <p>Market Satis Sistemi v1.2</p>
+                <p>Market Satis Sistemi v1.3</p>
                 <p style="color:#666; margin-top:5px;">Veriler bu tarayicida saklanmaktadir.</p>
+                <p style="color:#666; margin-top:5px;">100 ornek urun yuklu (barkod: 113-212)</p>
             </div>
         </section>
 
@@ -460,6 +591,184 @@ function initUsers() {
     }
 }
 initUsers();
+
+// 100 Ornek urun ekle (ilk kurulumda)
+function initSampleProducts() {
+    const products = DB.getProducts();
+    if (products.length > 0) return; // Zaten urun varsa ekleme
+
+    const sampleProducts = [
+        // Icecekler (113-127)
+        { barcode: '113', name: 'Su 500ml', price: 5.00 },
+        { barcode: '114', name: 'Su 1.5L', price: 10.00 },
+        { barcode: '115', name: 'Kola 330ml', price: 25.00 },
+        { barcode: '116', name: 'Kola 1L', price: 35.00 },
+        { barcode: '117', name: 'Fanta 330ml', price: 25.00 },
+        { barcode: '118', name: 'Sprite 330ml', price: 25.00 },
+        { barcode: '119', name: 'Ayran 200ml', price: 12.00 },
+        { barcode: '120', name: 'Ayran 1L', price: 35.00 },
+        { barcode: '121', name: 'Meyve Suyu 200ml', price: 15.00 },
+        { barcode: '122', name: 'Meyve Suyu 1L', price: 40.00 },
+        { barcode: '123', name: 'Soda 200ml', price: 8.00 },
+        { barcode: '124', name: 'Enerji Icecegi', price: 45.00 },
+        { barcode: '125', name: 'Ice Tea 500ml', price: 28.00 },
+        { barcode: '126', name: 'Limonata 1L', price: 32.00 },
+        { barcode: '127', name: 'Sut 1L', price: 42.00 },
+
+        // Ekmek ve Unlu Mamul (128-140)
+        { barcode: '128', name: 'Ekmek', price: 10.00 },
+        { barcode: '129', name: 'Tost Ekmegi', price: 35.00 },
+        { barcode: '130', name: 'Sandvic Ekmegi', price: 15.00 },
+        { barcode: '131', name: 'Simit', price: 15.00 },
+        { barcode: '132', name: 'Pogaca', price: 20.00 },
+        { barcode: '133', name: 'Acma', price: 20.00 },
+        { barcode: '134', name: 'Borek Dilimi', price: 35.00 },
+        { barcode: '135', name: 'Kurabiye Paket', price: 45.00 },
+        { barcode: '136', name: 'Kek', price: 55.00 },
+        { barcode: '137', name: 'Kruvasan', price: 25.00 },
+        { barcode: '138', name: 'Cikolatali Kek', price: 60.00 },
+        { barcode: '139', name: 'Galeta', price: 28.00 },
+        { barcode: '140', name: 'Grisini', price: 22.00 },
+
+        // Atistirmalik (141-160)
+        { barcode: '141', name: 'Cips Klasik', price: 35.00 },
+        { barcode: '142', name: 'Cips Yogurt', price: 35.00 },
+        { barcode: '143', name: 'Cips Acili', price: 35.00 },
+        { barcode: '144', name: 'Misir Cipsi', price: 30.00 },
+        { barcode: '145', name: 'Kraker', price: 25.00 },
+        { barcode: '146', name: 'Cubuk Kraker', price: 22.00 },
+        { barcode: '147', name: 'Findik 100g', price: 85.00 },
+        { barcode: '148', name: 'Fistik 100g', price: 65.00 },
+        { barcode: '149', name: 'Leblebi 100g', price: 45.00 },
+        { barcode: '150', name: 'Kuru Uzum 100g', price: 40.00 },
+        { barcode: '151', name: 'Kuru Kayisi 100g', price: 55.00 },
+        { barcode: '152', name: 'Cekirdek 100g', price: 35.00 },
+        { barcode: '153', name: 'Patlamis Misir', price: 28.00 },
+        { barcode: '154', name: 'Cheetos', price: 32.00 },
+        { barcode: '155', name: 'Doritos', price: 38.00 },
+        { barcode: '156', name: 'Biskuvi Paket', price: 18.00 },
+        { barcode: '157', name: 'Gofret', price: 15.00 },
+        { barcode: '158', name: 'Cikolatali Gofret', price: 20.00 },
+        { barcode: '159', name: 'Sakiz', price: 8.00 },
+        { barcode: '160', name: 'Nane Sekeri', price: 10.00 },
+
+        // Cikolata ve Tatli (161-175)
+        { barcode: '161', name: 'Sutlu Cikolata', price: 35.00 },
+        { barcode: '162', name: 'Bitter Cikolata', price: 40.00 },
+        { barcode: '163', name: 'Findikli Cikolata', price: 45.00 },
+        { barcode: '164', name: 'Cikolata Bar', price: 25.00 },
+        { barcode: '165', name: 'Karamelli Bar', price: 28.00 },
+        { barcode: '166', name: 'Seker 1kg', price: 55.00 },
+        { barcode: '167', name: 'Bal 450g', price: 180.00 },
+        { barcode: '168', name: 'Recel 380g', price: 65.00 },
+        { barcode: '169', name: 'Nutella 400g', price: 145.00 },
+        { barcode: '170', name: 'Tahin Pekmez', price: 95.00 },
+        { barcode: '171', name: 'Lokum Kutu', price: 75.00 },
+        { barcode: '172', name: 'Draje', price: 20.00 },
+        { barcode: '173', name: 'Lolipop', price: 5.00 },
+        { barcode: '174', name: 'Jelibon', price: 18.00 },
+        { barcode: '175', name: 'Puding', price: 22.00 },
+
+        // Sut Urunleri (176-188)
+        { barcode: '176', name: 'Yogurt 500g', price: 45.00 },
+        { barcode: '177', name: 'Yogurt 1kg', price: 75.00 },
+        { barcode: '178', name: 'Peynir 200g', price: 85.00 },
+        { barcode: '179', name: 'Kasar 200g', price: 95.00 },
+        { barcode: '180', name: 'Tulum Peynir 200g', price: 110.00 },
+        { barcode: '181', name: 'Krema 200ml', price: 55.00 },
+        { barcode: '182', name: 'Tereyag 250g', price: 95.00 },
+        { barcode: '183', name: 'Margarin 250g', price: 48.00 },
+        { barcode: '184', name: 'Suzme Yogurt 500g', price: 68.00 },
+        { barcode: '185', name: 'Kefir 500ml', price: 35.00 },
+        { barcode: '186', name: 'Labne 200g', price: 45.00 },
+        { barcode: '187', name: 'Mozzarella 200g', price: 85.00 },
+        { barcode: '188', name: 'Eritme Peynir', price: 42.00 },
+
+        // Temel Gida (189-200)
+        { barcode: '189', name: 'Makarna 500g', price: 28.00 },
+        { barcode: '190', name: 'Pirinc 1kg', price: 75.00 },
+        { barcode: '191', name: 'Bulgur 1kg', price: 55.00 },
+        { barcode: '192', name: 'Un 2kg', price: 65.00 },
+        { barcode: '193', name: 'Tuz 750g', price: 18.00 },
+        { barcode: '194', name: 'Seker 1kg', price: 55.00 },
+        { barcode: '195', name: 'Sivi Yag 1L', price: 85.00 },
+        { barcode: '196', name: 'Zeytinyag 500ml', price: 185.00 },
+        { barcode: '197', name: 'Domates Salca 700g', price: 65.00 },
+        { barcode: '198', name: 'Biber Salca 700g', price: 70.00 },
+        { barcode: '199', name: 'Ketcap 400g', price: 48.00 },
+        { barcode: '200', name: 'Mayonez 350g', price: 55.00 },
+
+        // Konserve ve Hazir Gida (201-210)
+        { barcode: '201', name: 'Ton Baligi', price: 65.00 },
+        { barcode: '202', name: 'Misir Konserve', price: 38.00 },
+        { barcode: '203', name: 'Bezelye Konserve', price: 35.00 },
+        { barcode: '204', name: 'Fasulye Konserve', price: 42.00 },
+        { barcode: '205', name: 'Tursu Kavanoz', price: 55.00 },
+        { barcode: '206', name: 'Zeytin 500g', price: 85.00 },
+        { barcode: '207', name: 'Hazir Corba', price: 25.00 },
+        { barcode: '208', name: 'Noodle', price: 18.00 },
+        { barcode: '209', name: 'Hazir Sos', price: 35.00 },
+        { barcode: '210', name: 'Soya Sosu', price: 42.00 },
+
+        // Temizlik (211-225)
+        { barcode: '211', name: 'Deterjan 1.5kg', price: 145.00 },
+        { barcode: '212', name: 'Yumusatici 1L', price: 75.00 },
+        { barcode: '213', name: 'Bulasik Deterjani', price: 65.00 },
+        { barcode: '214', name: 'Cam Silici 500ml', price: 48.00 },
+        { barcode: '215', name: 'Cif 750ml', price: 85.00 },
+        { barcode: '216', name: 'Camasir Suyu 1L', price: 35.00 },
+        { barcode: '217', name: 'Tuvalet Kagidi 8li', price: 125.00 },
+        { barcode: '218', name: 'Kagit Havlu 3lu', price: 85.00 },
+        { barcode: '219', name: 'Islak Mendil', price: 35.00 },
+        { barcode: '220', name: 'Pecete 100lu', price: 28.00 },
+        { barcode: '221', name: 'Cop Torbasi 20li', price: 45.00 },
+        { barcode: '222', name: 'Sunger', price: 12.00 },
+        { barcode: '223', name: 'El Sabunu', price: 35.00 },
+        { barcode: '224', name: 'Sivi Sabun 500ml', price: 55.00 },
+        { barcode: '225', name: 'Sampuan 400ml', price: 95.00 },
+
+        // Kisisel Bakim (226-235)
+        { barcode: '226', name: 'Dis Macunu', price: 55.00 },
+        { barcode: '227', name: 'Dis Fircasi', price: 35.00 },
+        { barcode: '228', name: 'Deodorant', price: 85.00 },
+        { barcode: '229', name: 'Tiras Jeli', price: 75.00 },
+        { barcode: '230', name: 'Jilet 4lu', price: 95.00 },
+        { barcode: '231', name: 'Pamuk', price: 25.00 },
+        { barcode: '232', name: 'Kulak Cubuğu', price: 18.00 },
+        { barcode: '233', name: 'Krem 100ml', price: 65.00 },
+        { barcode: '234', name: 'Dudak Nemlendiricisi', price: 45.00 },
+        { barcode: '235', name: 'Parfum 50ml', price: 185.00 },
+
+        // Diger (236-250)
+        { barcode: '236', name: 'Cay 500g', price: 145.00 },
+        { barcode: '237', name: 'Kahve 100g', price: 85.00 },
+        { barcode: '238', name: 'Turk Kahvesi 100g', price: 95.00 },
+        { barcode: '239', name: 'Nesquik 400g', price: 125.00 },
+        { barcode: '240', name: 'Yumurta 10lu', price: 95.00 },
+        { barcode: '241', name: 'Sigara', price: 65.00 },
+        { barcode: '242', name: 'Cakmak', price: 15.00 },
+        { barcode: '243', name: 'Pil AA 4lu', price: 55.00 },
+        { barcode: '244', name: 'Seffaf Bant', price: 18.00 },
+        { barcode: '245', name: 'Kalem', price: 8.00 },
+        { barcode: '246', name: 'Defter', price: 25.00 },
+        { barcode: '247', name: 'Semsiye', price: 145.00 },
+        { barcode: '248', name: 'Gazete', price: 20.00 },
+        { barcode: '249', name: 'Dergi', price: 75.00 },
+        { barcode: '250', name: 'Oyuncak', price: 85.00 }
+    ];
+
+    // Ilk 100 urunu ekle (113-212)
+    const productsToAdd = sampleProducts.slice(0, 100).map((p, idx) => ({
+        id: idx + 1,
+        barcode: p.barcode,
+        name: p.name,
+        price: p.price
+    }));
+
+    DB.saveProducts(productsToAdd);
+    console.log('100 ornek urun eklendi!');
+}
+initSampleProducts();
 
 // ============ OTURUM YÖNETİMİ ============
 let currentUser = JSON.parse(sessionStorage.getItem('market_current_user') || 'null');
@@ -503,6 +812,7 @@ function showMainApp() {
 
     applyPermissions();
     document.getElementById('barcodeInput').focus();
+    updateTodayTotal();
 }
 
 function applyPermissions() {
@@ -605,8 +915,9 @@ function showTab(tabId) {
     document.getElementById(tabId).classList.add('active');
     if (tabId === 'products') loadProducts();
     if (tabId === 'history') loadSalesHistory();
+    if (tabId === 'kasaraporu') { setKasaToday(); loadKasaRaporu(); }
     if (tabId === 'settings') loadUsers();
-    if (tabId === 'sales') elements.barcodeInput.focus();
+    if (tabId === 'sales') { elements.barcodeInput.focus(); updateTodayTotal(); }
 }
 
 function showNotification(message, type = 'success') {
@@ -733,6 +1044,7 @@ function completeSale() {
     cart = [];
     renderCart();
     elements.productInfo.classList.add('hidden');
+    updateTodayTotal();
 }
 
 // ============ ÜRÜN YÖNETİMİ ============
@@ -799,27 +1111,139 @@ function deleteProduct(id) {
     loadProducts();
 }
 
-// ============ SATIŞ GEÇMİŞİ ============
-function loadSalesHistory() {
+// ============ SATIŞ GEÇMİŞİ (SADECE BUGÜN) ============
+function getTodayString() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function getSalesByDate(dateStr, cashierFilter = '') {
     const sales = DB.getSales();
-    if (sales.length === 0) {
-        elements.salesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Henuz satis yapilmamis</td></tr>';
+    return sales.filter(sale => {
+        const saleDate = sale.created_at.slice(0, 10);
+        const matchDate = saleDate === dateStr;
+        const matchCashier = !cashierFilter || sale.cashier === cashierFilter;
+        return matchDate && matchCashier;
+    });
+}
+
+function getCashierList() {
+    const sales = DB.getSales();
+    const cashiers = new Set();
+    sales.forEach(sale => {
+        if (sale.cashier) cashiers.add(sale.cashier);
+    });
+    return Array.from(cashiers).sort();
+}
+
+function updateCashierFilters() {
+    const cashiers = getCashierList();
+    const historyFilter = document.getElementById('historyCashierFilter');
+    const kasaFilter = document.getElementById('kasaCashierFilter');
+
+    const currentHistoryVal = historyFilter ? historyFilter.value : '';
+    const currentKasaVal = kasaFilter ? kasaFilter.value : '';
+
+    let optionsHtml = '<option value="">Tumu</option>';
+    cashiers.forEach(c => {
+        optionsHtml += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+    });
+
+    if (historyFilter) {
+        historyFilter.innerHTML = optionsHtml;
+        historyFilter.value = currentHistoryVal;
+    }
+    if (kasaFilter) {
+        kasaFilter.innerHTML = optionsHtml;
+        kasaFilter.value = currentKasaVal;
+    }
+}
+
+function loadSalesHistory() {
+    updateCashierFilters();
+    const cashierFilter = document.getElementById('historyCashierFilter').value;
+    const todaySales = getSalesByDate(getTodayString(), cashierFilter);
+
+    const totalInfo = document.getElementById('historyTotalInfo');
+    const total = todaySales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0);
+    totalInfo.textContent = `Toplam: ${total.toFixed(2)} TL (${todaySales.length} satis)`;
+
+    if (todaySales.length === 0) {
+        elements.salesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Bugun satis yapilmamis</td></tr>';
         return;
     }
     let html = '';
-    sales.forEach(sale => {
-        const date = new Date(sale.created_at).toLocaleString('tr-TR');
+    todaySales.forEach(sale => {
+        const time = new Date(sale.created_at).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
         html += `
             <tr>
                 <td>#${sale.id}</td>
-                <td>${date}</td>
-                <td>${escapeHtml(sale.cashier || '-')}</td>
+                <td>${time}</td>
+                <td><span class="cashier-link" onclick="filterByCashier('history', '${escapeHtml(sale.cashier || '')}')">${escapeHtml(sale.cashier || '-')}</span></td>
                 <td>${parseFloat(sale.total_amount).toFixed(2)} TL</td>
                 <td><button class="detail-btn" onclick="showSaleDetail(${sale.id})">Detay</button></td>
             </tr>
         `;
     });
     elements.salesBody.innerHTML = html;
+}
+
+function filterByCashier(target, cashier) {
+    if (target === 'history') {
+        document.getElementById('historyCashierFilter').value = cashier;
+        loadSalesHistory();
+    } else if (target === 'kasa') {
+        document.getElementById('kasaCashierFilter').value = cashier;
+        loadKasaRaporu();
+    }
+}
+
+// ============ KASA RAPORU ============
+function setKasaToday() {
+    document.getElementById('kasaDateFilter').value = getTodayString();
+}
+
+function loadKasaRaporu() {
+    updateCashierFilters();
+    const dateFilter = document.getElementById('kasaDateFilter').value || getTodayString();
+    const cashierFilter = document.getElementById('kasaCashierFilter').value;
+    const sales = getSalesByDate(dateFilter, cashierFilter);
+
+    // Ozet kartlarini guncelle
+    const total = sales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0);
+    const count = sales.length;
+    const avg = count > 0 ? total / count : 0;
+
+    document.getElementById('kasaToplam').textContent = total.toFixed(2) + ' ₺';
+    document.getElementById('kasaAdet').textContent = count;
+    document.getElementById('kasaOrtalama').textContent = avg.toFixed(2) + ' ₺';
+
+    // Satis listesi
+    const kasaBody = document.getElementById('kasaBody');
+    if (sales.length === 0) {
+        kasaBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Bu tarihte satis yok</td></tr>';
+        return;
+    }
+
+    let html = '';
+    sales.forEach(sale => {
+        const time = new Date(sale.created_at).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+        html += `
+            <tr>
+                <td>#${sale.id}</td>
+                <td>${time}</td>
+                <td><span class="cashier-link" onclick="filterByCashier('kasa', '${escapeHtml(sale.cashier || '')}')">${escapeHtml(sale.cashier || '-')}</span></td>
+                <td>${parseFloat(sale.total_amount).toFixed(2)} TL</td>
+                <td><button class="detail-btn" onclick="showSaleDetail(${sale.id})">Detay</button></td>
+            </tr>
+        `;
+    });
+    kasaBody.innerHTML = html;
+}
+
+function updateTodayTotal() {
+    const todaySales = getSalesByDate(getTodayString());
+    const total = todaySales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0);
+    document.getElementById('todayTotal').textContent = total.toFixed(0) + ' ₺';
 }
 
 function showSaleDetail(id) {
