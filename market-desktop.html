@@ -10,9 +10,26 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
+        /* Login Ekrani */
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #2c3e50, #3498db); }
+        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
+        .login-box h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        .login-box .form-group { margin-bottom: 20px; }
+        .login-box label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
+        .login-box input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .login-box input:focus { border-color: #3498db; outline: none; }
+        .login-box button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; transition: background 0.3s; }
+        .login-box button:hover { background: #2980b9; }
+        .login-error { color: #e74c3c; text-align: center; margin-top: 15px; display: none; }
+
         /* Header */
         header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; }
-        header h1 { font-size: 1.8rem; }
+        header h1 { font-size: 1.5rem; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .user-info { font-size: 0.9rem; color: #bdc3c7; }
+        .user-info strong { color: white; }
+        .logout-btn { padding: 8px 15px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem; }
+        .logout-btn:hover { background: #c0392b; }
 
         /* Hamburger Menu */
         .menu-toggle { background: none; border: none; cursor: pointer; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
@@ -24,6 +41,7 @@
         .dropdown-menu button { width: 100%; padding: 15px 20px; border: none; background: white; color: #333; text-align: left; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 10px; transition: background 0.2s; }
         .dropdown-menu button:hover { background: #f5f5f5; }
         .dropdown-menu button:not(:last-child) { border-bottom: 1px solid #eee; }
+        .dropdown-menu button.hidden { display: none; }
         .dropdown-menu .menu-icon { font-size: 1.2rem; width: 24px; text-align: center; }
 
         /* Tab Content */
@@ -70,8 +88,8 @@
         .product-form form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 5px; font-weight: 500; }
-        .form-group input { padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem; }
-        .form-group input:focus { border-color: #3498db; outline: none; }
+        .form-group input, .form-group select { padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { border-color: #3498db; outline: none; }
         .submit-btn { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
         .submit-btn:hover { background: #219a52; }
         .product-list h2, .product-list h3 { margin-bottom: 15px; color: #2c3e50; }
@@ -84,11 +102,13 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #2c3e50; color: white; }
         tr:hover { background: #f5f5f5; }
-        .delete-btn, .detail-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .delete-btn, .detail-btn, .edit-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; margin-right: 5px; }
         .delete-btn { background: #e74c3c; color: white; }
         .delete-btn:hover { background: #c0392b; }
         .detail-btn { background: #3498db; color: white; }
         .detail-btn:hover { background: #2980b9; }
+        .edit-btn { background: #f39c12; color: white; }
+        .edit-btn:hover { background: #d68910; }
 
         /* Settings */
         .settings-section { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
@@ -102,11 +122,15 @@
         .success-btn:hover { background: #219a52; }
         .primary-btn { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; }
         .primary-btn:hover { background: #2980b9; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 
         /* File Input */
         .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
         .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+        /* Role Badge */
+        .role-badge { padding: 3px 8px; border-radius: 3px; font-size: 0.8rem; font-weight: bold; }
+        .role-badge.admin { background: #e74c3c; color: white; }
+        .role-badge.user { background: #3498db; color: white; }
 
         /* Modal */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -123,21 +147,49 @@
         .notification.success { background: #27ae60; }
         .notification.error { background: #e74c3c; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Login Ekrani -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <h1>Market Giris</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Kullanici Adi</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Sifre</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Giris Yap</button>
+                <p class="login-error" id="loginError">Kullanici adi veya sifre hatali!</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ana Uygulama -->
+    <div class="container hidden" id="mainApp">
         <header>
             <h1>Market Satis Sistemi</h1>
-            <button class="menu-toggle" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            <div class="header-right">
+                <div class="user-info">
+                    <span id="currentUserDisplay"></span>
+                </div>
+                <button class="logout-btn" onclick="logout()">Cikis</button>
+                <button class="menu-toggle" id="menuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
             <div class="dropdown-menu" id="dropdownMenu">
-                <button data-tab="products"><span class="menu-icon">📦</span> Urun Yonetimi</button>
-                <button data-tab="history"><span class="menu-icon">📋</span> Satis Gecmisi</button>
-                <button data-tab="settings"><span class="menu-icon">⚙️</span> Ayarlar</button>
+                <button data-tab="products" id="menuProducts"><span class="menu-icon">📦</span> Urun Yonetimi</button>
+                <button data-tab="history" id="menuHistory"><span class="menu-icon">📋</span> Satis Gecmisi</button>
+                <button data-tab="settings" id="menuSettings"><span class="menu-icon">⚙️</span> Ayarlar</button>
             </div>
         </header>
 
@@ -147,7 +199,7 @@
                 <div class="barcode-section">
                     <h2>Barkod Okut</h2>
                     <div class="input-group">
-                        <input type="text" id="barcodeInput" placeholder="Barkod okutun veya girin..." autofocus>
+                        <input type="text" id="barcodeInput" placeholder="Barkod okutun veya girin...">
                         <button id="addToCartBtn">Ekle</button>
                     </div>
                     <div id="productInfo" class="product-info hidden">
@@ -167,7 +219,7 @@
             </div>
         </section>
 
-        <!-- Urun Yonetimi -->
+        <!-- Urun Yonetimi (Sadece Admin) -->
         <section id="products" class="tab-content">
             <div class="section-header">
                 <h2>Urun Yonetimi</h2>
@@ -207,22 +259,53 @@
                 <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
             </div>
             <table>
-                <thead><tr><th>Satis No</th><th>Tarih</th><th>Toplam</th><th>Detay</th></tr></thead>
+                <thead><tr><th>Satis No</th><th>Tarih</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
                 <tbody id="salesBody"></tbody>
             </table>
         </section>
 
-        <!-- Ayarlar -->
+        <!-- Ayarlar (Admin icin farkli) -->
         <section id="settings" class="tab-content">
             <div class="section-header">
                 <h2>Ayarlar</h2>
                 <button class="back-btn" onclick="showTab('sales')">← Satisa Don</button>
             </div>
 
-            <div class="settings-section">
+            <!-- Kullanici Yonetimi - Sadece Admin -->
+            <div class="settings-section" id="userManagementSection">
+                <h3>Kullanici Yonetimi</h3>
+                <div class="product-form" style="margin-bottom:20px;">
+                    <form id="userForm">
+                        <div class="form-group">
+                            <label for="newUsername">Kullanici Adi</label>
+                            <input type="text" id="newUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">Sifre</label>
+                            <input type="password" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newRole">Rol</label>
+                            <select id="newRole">
+                                <option value="user">Kullanici</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="submit-btn">Kullanici Ekle</button>
+                    </form>
+                </div>
+                <h4 style="margin-bottom:10px;">Kayitli Kullanicilar</h4>
+                <table>
+                    <thead><tr><th>Kullanici Adi</th><th>Rol</th><th>Islem</th></tr></thead>
+                    <tbody id="usersBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Excel - Sadece Admin -->
+            <div class="settings-section" id="excelSection">
                 <h3>Excel Veri Yonetimi</h3>
                 <div class="settings-row">
-                    <span>Tum verileri Excel'e aktar (Urunler + Satislar)</span>
+                    <span>Tum verileri Excel'e aktar</span>
                     <button class="success-btn" onclick="exportToExcel()">Excel'e Aktar</button>
                 </div>
                 <div class="settings-row">
@@ -232,17 +315,10 @@
                         <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="importFromExcel(event)">
                     </div>
                 </div>
-                <div class="settings-row">
-                    <span>Sadece urunleri Excel'e aktar</span>
-                    <button class="success-btn" onclick="exportProductsToExcel()">Urunleri Aktar</button>
-                </div>
-                <div class="settings-row">
-                    <span>Sadece satislari Excel'e aktar</span>
-                    <button class="success-btn" onclick="exportSalesToExcel()">Satislari Aktar</button>
-                </div>
             </div>
 
-            <div class="settings-section">
+            <!-- Veri Temizleme - Sadece Admin -->
+            <div class="settings-section" id="dataCleanSection">
                 <h3>Veri Temizleme</h3>
                 <div class="settings-row">
                     <span>Tum urunleri sil</span>
@@ -252,17 +328,28 @@
                     <span>Tum satis gecmisini sil</span>
                     <button class="danger-btn" onclick="clearAllSales()">Gecmisi Temizle</button>
                 </div>
-                <div class="settings-row">
-                    <span>Tum verileri sil</span>
-                    <button class="danger-btn" onclick="clearAllData()">Hepsini Temizle</button>
-                </div>
+            </div>
+
+            <!-- Sifre Degistirme - Herkes -->
+            <div class="settings-section">
+                <h3>Sifre Degistir</h3>
+                <form id="changePasswordForm" style="max-width:300px;">
+                    <div class="form-group">
+                        <label>Mevcut Sifre</label>
+                        <input type="password" id="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Sifre</label>
+                        <input type="password" id="newPasswordChange" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Sifreyi Degistir</button>
+                </form>
             </div>
 
             <div class="settings-section">
                 <h3>Hakkinda</h3>
-                <p>Market Satis Sistemi v1.1</p>
+                <p>Market Satis Sistemi v1.2</p>
                 <p style="color:#666; margin-top:5px;">Veriler bu tarayicida saklanmaktadir.</p>
-                <p style="color:#666; margin-top:5px;">Excel'e aktararak yedek alabilirsiniz.</p>
             </div>
         </section>
 
@@ -278,16 +365,98 @@
     </div>
 
 <script>
+// ============ VERİ YÖNETİMİ ============
 const DB = {
     getProducts: () => JSON.parse(localStorage.getItem('market_products') || '[]'),
     saveProducts: (data) => localStorage.setItem('market_products', JSON.stringify(data)),
     getSales: () => JSON.parse(localStorage.getItem('market_sales') || '[]'),
-    saveSales: (data) => localStorage.setItem('market_sales', JSON.stringify(data))
+    saveSales: (data) => localStorage.setItem('market_sales', JSON.stringify(data)),
+    getUsers: () => JSON.parse(localStorage.getItem('market_users') || '[]'),
+    saveUsers: (data) => localStorage.setItem('market_users', JSON.stringify(data))
 };
 
+// Default admin olustur
+function initUsers() {
+    let users = DB.getUsers();
+    if (users.length === 0) {
+        users = [{ username: 'admin', password: 'admin123', role: 'admin' }];
+        DB.saveUsers(users);
+    }
+}
+initUsers();
+
+// ============ OTURUM YÖNETİMİ ============
+let currentUser = JSON.parse(sessionStorage.getItem('market_current_user') || 'null');
 let cart = [];
 let nextSaleId = parseInt(localStorage.getItem('market_next_sale_id') || '1');
 
+function login(username, password) {
+    const users = DB.getUsers();
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+        currentUser = { username: user.username, role: user.role };
+        sessionStorage.setItem('market_current_user', JSON.stringify(currentUser));
+        return true;
+    }
+    return false;
+}
+
+function logout() {
+    currentUser = null;
+    sessionStorage.removeItem('market_current_user');
+    showLoginScreen();
+}
+
+function isAdmin() {
+    return currentUser && currentUser.role === 'admin';
+}
+
+function showLoginScreen() {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').style.display = 'none';
+}
+
+function showMainApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('currentUserDisplay').innerHTML =
+        `<strong>${currentUser.username}</strong> <span class="role-badge ${currentUser.role}">${currentUser.role === 'admin' ? 'Admin' : 'Kullanici'}</span>`;
+
+    applyPermissions();
+    document.getElementById('barcodeInput').focus();
+}
+
+function applyPermissions() {
+    const menuProducts = document.getElementById('menuProducts');
+    const menuSettings = document.getElementById('menuSettings');
+    const userManagement = document.getElementById('userManagementSection');
+    const excelSection = document.getElementById('excelSection');
+    const dataCleanSection = document.getElementById('dataCleanSection');
+
+    if (isAdmin()) {
+        menuProducts.classList.remove('hidden');
+        userManagement.classList.remove('hidden');
+        excelSection.classList.remove('hidden');
+        dataCleanSection.classList.remove('hidden');
+    } else {
+        menuProducts.classList.add('hidden');
+        userManagement.classList.add('hidden');
+        excelSection.classList.add('hidden');
+        dataCleanSection.classList.add('hidden');
+    }
+}
+
+// Sayfa yuklendiginde
+if (currentUser) {
+    showMainApp();
+} else {
+    showLoginScreen();
+}
+
+// ============ DOM ELEMANLARI ============
 const elements = {
     menuToggle: document.getElementById('menuToggle'),
     dropdownMenu: document.getElementById('dropdownMenu'),
@@ -306,13 +475,30 @@ const elements = {
     productPrice: document.getElementById('productPrice'),
     productsBody: document.getElementById('productsBody'),
     salesBody: document.getElementById('salesBody'),
+    usersBody: document.getElementById('usersBody'),
     saleModal: document.getElementById('saleModal'),
     saleDetails: document.getElementById('saleDetails'),
     closeBtn: document.querySelector('.close-btn'),
-    notification: document.getElementById('notification')
+    notification: document.getElementById('notification'),
+    loginForm: document.getElementById('loginForm'),
+    userForm: document.getElementById('userForm'),
+    changePasswordForm: document.getElementById('changePasswordForm')
 };
 
-// Menu toggle
+// ============ LOGIN ============
+elements.loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (login(username, password)) {
+        showMainApp();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+    }
+});
+
+// ============ MENU ============
 elements.menuToggle.addEventListener('click', (e) => {
     e.stopPropagation();
     elements.dropdownMenu.classList.toggle('active');
@@ -329,6 +515,10 @@ elements.dropdownMenu.addEventListener('click', (e) => {
 document.querySelectorAll('.dropdown-menu button').forEach(btn => {
     btn.addEventListener('click', () => {
         const tabId = btn.dataset.tab;
+        if (tabId === 'products' && !isAdmin()) {
+            showNotification('Bu sayfaya erisim yetkiniz yok!', 'error');
+            return;
+        }
         showTab(tabId);
         elements.dropdownMenu.classList.remove('active');
     });
@@ -339,6 +529,7 @@ function showTab(tabId) {
     document.getElementById(tabId).classList.add('active');
     if (tabId === 'products') loadProducts();
     if (tabId === 'history') loadSalesHistory();
+    if (tabId === 'settings') loadUsers();
     if (tabId === 'sales') elements.barcodeInput.focus();
 }
 
@@ -355,6 +546,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ============ SATIŞ İŞLEMLERİ ============
 function searchProduct(barcode) {
     const products = DB.getProducts();
     return products.find(p => p.barcode === barcode) || null;
@@ -453,6 +645,7 @@ function completeSale() {
         id: nextSaleId++,
         total_amount: totalAmount,
         created_at: new Date().toISOString(),
+        cashier: currentUser.username,
         items: [...cart]
     };
 
@@ -466,6 +659,7 @@ function completeSale() {
     elements.productInfo.classList.add('hidden');
 }
 
+// ============ ÜRÜN YÖNETİMİ ============
 function loadProducts() {
     const products = DB.getProducts();
     if (products.length === 0) {
@@ -488,6 +682,11 @@ function loadProducts() {
 
 function addProduct(e) {
     e.preventDefault();
+    if (!isAdmin()) {
+        showNotification('Bu islemi yapmaya yetkiniz yok!', 'error');
+        return;
+    }
+
     const barcode = elements.productBarcode.value.trim();
     const name = elements.productName.value.trim();
     const price = parseFloat(elements.productPrice.value);
@@ -513,6 +712,10 @@ function addProduct(e) {
 }
 
 function deleteProduct(id) {
+    if (!isAdmin()) {
+        showNotification('Bu islemi yapmaya yetkiniz yok!', 'error');
+        return;
+    }
     if (!confirm('Bu urunu silmek istediginize emin misiniz?')) return;
     const products = DB.getProducts().filter(p => p.id !== id);
     DB.saveProducts(products);
@@ -520,10 +723,11 @@ function deleteProduct(id) {
     loadProducts();
 }
 
+// ============ SATIŞ GEÇMİŞİ ============
 function loadSalesHistory() {
     const sales = DB.getSales();
     if (sales.length === 0) {
-        elements.salesBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Henuz satis yapilmamis</td></tr>';
+        elements.salesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Henuz satis yapilmamis</td></tr>';
         return;
     }
     let html = '';
@@ -533,6 +737,7 @@ function loadSalesHistory() {
             <tr>
                 <td>#${sale.id}</td>
                 <td>${date}</td>
+                <td>${escapeHtml(sale.cashier || '-')}</td>
                 <td>${parseFloat(sale.total_amount).toFixed(2)} TL</td>
                 <td><button class="detail-btn" onclick="showSaleDetail(${sale.id})">Detay</button></td>
             </tr>
@@ -550,6 +755,7 @@ function showSaleDetail(id) {
     let html = `
         <p><strong>Satis No:</strong> #${sale.id}</p>
         <p><strong>Tarih:</strong> ${date}</p>
+        <p><strong>Kasiyer:</strong> ${escapeHtml(sale.cashier || '-')}</p>
         <p><strong>Toplam:</strong> ${parseFloat(sale.total_amount).toFixed(2)} TL</p>
         <table>
             <thead><tr><th>Urun</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
@@ -570,34 +776,118 @@ function showSaleDetail(id) {
     elements.saleModal.classList.remove('hidden');
 }
 
-// ============ EXCEL FONKSIYONLARI ============
+// ============ KULLANICI YÖNETİMİ ============
+function loadUsers() {
+    if (!isAdmin()) return;
 
-// Tum verileri Excel'e aktar
+    const users = DB.getUsers();
+    let html = '';
+    users.forEach(user => {
+        const canDelete = user.username !== 'admin' && user.username !== currentUser.username;
+        html += `
+            <tr>
+                <td>${escapeHtml(user.username)}</td>
+                <td><span class="role-badge ${user.role}">${user.role === 'admin' ? 'Admin' : 'Kullanici'}</span></td>
+                <td>
+                    ${canDelete ? `<button class="delete-btn" onclick="deleteUser('${user.username}')">Sil</button>` : '-'}
+                </td>
+            </tr>
+        `;
+    });
+    elements.usersBody.innerHTML = html;
+}
+
+elements.userForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!isAdmin()) {
+        showNotification('Bu islemi yapmaya yetkiniz yok!', 'error');
+        return;
+    }
+
+    const username = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('newPassword').value;
+    const role = document.getElementById('newRole').value;
+
+    if (!username || !password) {
+        showNotification('Tum alanlari doldurun!', 'error');
+        return;
+    }
+
+    const users = DB.getUsers();
+    if (users.find(u => u.username === username)) {
+        showNotification('Bu kullanici adi zaten mevcut!', 'error');
+        return;
+    }
+
+    users.push({ username, password, role });
+    DB.saveUsers(users);
+    showNotification('Kullanici eklendi!');
+    elements.userForm.reset();
+    loadUsers();
+});
+
+function deleteUser(username) {
+    if (!isAdmin()) {
+        showNotification('Bu islemi yapmaya yetkiniz yok!', 'error');
+        return;
+    }
+    if (username === 'admin') {
+        showNotification('Admin kullanici silinemez!', 'error');
+        return;
+    }
+    if (!confirm('Bu kullaniciyi silmek istediginize emin misiniz?')) return;
+
+    const users = DB.getUsers().filter(u => u.username !== username);
+    DB.saveUsers(users);
+    showNotification('Kullanici silindi!');
+    loadUsers();
+}
+
+elements.changePasswordForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const currentPass = document.getElementById('currentPassword').value;
+    const newPass = document.getElementById('newPasswordChange').value;
+
+    const users = DB.getUsers();
+    const userIndex = users.findIndex(u => u.username === currentUser.username);
+
+    if (users[userIndex].password !== currentPass) {
+        showNotification('Mevcut sifre yanlis!', 'error');
+        return;
+    }
+
+    users[userIndex].password = newPass;
+    DB.saveUsers(users);
+    showNotification('Sifre degistirildi!');
+    elements.changePasswordForm.reset();
+});
+
+// ============ EXCEL FONKSİYONLARI ============
 function exportToExcel() {
+    if (!isAdmin()) {
+        showNotification('Bu islemi yapmaya yetkiniz yok!', 'error');
+        return;
+    }
+
     const products = DB.getProducts();
     const sales = DB.getSales();
+    const users = DB.getUsers();
 
     const wb = XLSX.utils.book_new();
 
-    // Urunler sayfasi
-    const productData = products.map(p => ({
-        'Barkod': p.barcode,
-        'Urun Adi': p.name,
-        'Fiyat': p.price
-    }));
-    if (productData.length === 0) {
-        productData.push({ 'Barkod': '', 'Urun Adi': '', 'Fiyat': '' });
-    }
-    const wsProducts = XLSX.utils.json_to_sheet(productData);
-    XLSX.utils.book_append_sheet(wb, wsProducts, 'Urunler');
+    // Urunler
+    const productData = products.map(p => ({ 'Barkod': p.barcode, 'Urun Adi': p.name, 'Fiyat': p.price }));
+    if (productData.length === 0) productData.push({ 'Barkod': '', 'Urun Adi': '', 'Fiyat': '' });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(productData), 'Urunler');
 
-    // Satislar sayfasi
+    // Satislar
     const salesData = [];
     sales.forEach(sale => {
         sale.items.forEach((item, idx) => {
             salesData.push({
                 'Satis No': sale.id,
                 'Tarih': new Date(sale.created_at).toLocaleString('tr-TR'),
+                'Kasiyer': sale.cashier || '',
                 'Urun Barkod': item.product_barcode,
                 'Urun Adi': item.product_name,
                 'Adet': item.quantity,
@@ -607,80 +897,26 @@ function exportToExcel() {
             });
         });
     });
-    if (salesData.length === 0) {
-        salesData.push({ 'Satis No': '', 'Tarih': '', 'Urun Barkod': '', 'Urun Adi': '', 'Adet': '', 'Birim Fiyat': '', 'Toplam': '', 'Satis Toplami': '' });
-    }
-    const wsSales = XLSX.utils.json_to_sheet(salesData);
-    XLSX.utils.book_append_sheet(wb, wsSales, 'Satislar');
+    if (salesData.length === 0) salesData.push({});
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(salesData), 'Satislar');
 
-    // Ayarlar sayfasi (next sale id)
-    const wsConfig = XLSX.utils.json_to_sheet([{ 'Ayar': 'SonrakiSatisNo', 'Deger': nextSaleId }]);
-    XLSX.utils.book_append_sheet(wb, wsConfig, 'Ayarlar');
+    // Kullanicilar
+    const userData = users.map(u => ({ 'Kullanici Adi': u.username, 'Sifre': u.password, 'Rol': u.role }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(userData), 'Kullanicilar');
 
-    const fileName = `market_verileri_${new Date().toISOString().slice(0,10)}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    // Ayarlar
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ 'Ayar': 'SonrakiSatisNo', 'Deger': nextSaleId }]), 'Ayarlar');
+
+    XLSX.writeFile(wb, `market_verileri_${new Date().toISOString().slice(0,10)}.xlsx`);
     showNotification('Veriler Excel dosyasina aktarildi!');
 }
 
-// Sadece urunleri Excel'e aktar
-function exportProductsToExcel() {
-    const products = DB.getProducts();
-    const productData = products.map(p => ({
-        'Barkod': p.barcode,
-        'Urun Adi': p.name,
-        'Fiyat': p.price
-    }));
-
-    if (productData.length === 0) {
-        showNotification('Aktarilacak urun yok!', 'error');
-        return;
-    }
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(productData);
-    XLSX.utils.book_append_sheet(wb, ws, 'Urunler');
-
-    const fileName = `urunler_${new Date().toISOString().slice(0,10)}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-    showNotification('Urunler Excel dosyasina aktarildi!');
-}
-
-// Sadece satislari Excel'e aktar
-function exportSalesToExcel() {
-    const sales = DB.getSales();
-    const salesData = [];
-
-    sales.forEach(sale => {
-        sale.items.forEach((item, idx) => {
-            salesData.push({
-                'Satis No': sale.id,
-                'Tarih': new Date(sale.created_at).toLocaleString('tr-TR'),
-                'Urun Barkod': item.product_barcode,
-                'Urun Adi': item.product_name,
-                'Adet': item.quantity,
-                'Birim Fiyat': item.unit_price,
-                'Toplam': item.total_price,
-                'Satis Toplami': idx === 0 ? sale.total_amount : ''
-            });
-        });
-    });
-
-    if (salesData.length === 0) {
-        showNotification('Aktarilacak satis yok!', 'error');
-        return;
-    }
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(salesData);
-    XLSX.utils.book_append_sheet(wb, ws, 'Satislar');
-
-    const fileName = `satislar_${new Date().toISOString().slice(0,10)}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-    showNotification('Satislar Excel dosyasina aktarildi!');
-}
-
-// Excel'den verileri ice aktar
 function importFromExcel(event) {
+    if (!isAdmin()) {
+        showNotification('Bu islemi yapmaya yetkiniz yok!', 'error');
+        return;
+    }
+
     const file = event.target.files[0];
     if (!file) return;
 
@@ -690,19 +926,14 @@ function importFromExcel(event) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
 
-            // Urunler sayfasini oku
+            // Urunler
             if (workbook.SheetNames.includes('Urunler')) {
-                const wsProducts = workbook.Sheets['Urunler'];
-                const productsData = XLSX.utils.sheet_to_json(wsProducts);
-
+                const productsData = XLSX.utils.sheet_to_json(workbook.Sheets['Urunler']);
                 const products = [];
-                let maxId = 0;
                 productsData.forEach((row, index) => {
                     if (row['Barkod'] && row['Urun Adi']) {
-                        const id = index + 1;
-                        maxId = Math.max(maxId, id);
                         products.push({
-                            id: id,
+                            id: index + 1,
                             barcode: String(row['Barkod']),
                             name: String(row['Urun Adi']),
                             price: parseFloat(row['Fiyat']) || 0
@@ -712,17 +943,14 @@ function importFromExcel(event) {
                 DB.saveProducts(products);
             }
 
-            // Satislar sayfasini oku
+            // Satislar
             if (workbook.SheetNames.includes('Satislar')) {
-                const wsSales = workbook.Sheets['Satislar'];
-                const salesData = XLSX.utils.sheet_to_json(wsSales);
-
+                const salesData = XLSX.utils.sheet_to_json(workbook.Sheets['Satislar']);
                 const salesMap = new Map();
                 let maxSaleId = 0;
 
                 salesData.forEach(row => {
                     if (!row['Satis No']) return;
-
                     const saleId = parseInt(row['Satis No']);
                     maxSaleId = Math.max(maxSaleId, saleId);
 
@@ -730,7 +958,8 @@ function importFromExcel(event) {
                         salesMap.set(saleId, {
                             id: saleId,
                             total_amount: parseFloat(row['Satis Toplami']) || 0,
-                            created_at: row['Tarih'] ? new Date(row['Tarih']).toISOString() : new Date().toISOString(),
+                            created_at: new Date().toISOString(),
+                            cashier: row['Kasiyer'] || '',
                             items: []
                         });
                     }
@@ -745,24 +974,33 @@ function importFromExcel(event) {
                             total_price: parseFloat(row['Toplam']) || 0
                         });
                     }
-
-                    // Satis toplamini guncelle
-                    if (row['Satis Toplami']) {
-                        sale.total_amount = parseFloat(row['Satis Toplami']);
-                    }
+                    if (row['Satis Toplami']) sale.total_amount = parseFloat(row['Satis Toplami']);
                 });
 
-                const sales = Array.from(salesMap.values()).sort((a, b) => b.id - a.id);
-                DB.saveSales(sales);
-
+                DB.saveSales(Array.from(salesMap.values()).sort((a, b) => b.id - a.id));
                 nextSaleId = maxSaleId + 1;
                 localStorage.setItem('market_next_sale_id', nextSaleId.toString());
             }
 
-            // Ayarlar sayfasini oku
+            // Kullanicilar
+            if (workbook.SheetNames.includes('Kullanicilar')) {
+                const usersData = XLSX.utils.sheet_to_json(workbook.Sheets['Kullanicilar']);
+                const users = [];
+                usersData.forEach(row => {
+                    if (row['Kullanici Adi'] && row['Sifre']) {
+                        users.push({
+                            username: String(row['Kullanici Adi']),
+                            password: String(row['Sifre']),
+                            role: row['Rol'] === 'admin' ? 'admin' : 'user'
+                        });
+                    }
+                });
+                if (users.length > 0) DB.saveUsers(users);
+            }
+
+            // Ayarlar
             if (workbook.SheetNames.includes('Ayarlar')) {
-                const wsConfig = workbook.Sheets['Ayarlar'];
-                const configData = XLSX.utils.sheet_to_json(wsConfig);
+                const configData = XLSX.utils.sheet_to_json(workbook.Sheets['Ayarlar']);
                 configData.forEach(row => {
                     if (row['Ayar'] === 'SonrakiSatisNo' && row['Deger']) {
                         nextSaleId = parseInt(row['Deger']);
@@ -772,7 +1010,7 @@ function importFromExcel(event) {
             }
 
             showNotification('Veriler Excel dosyasindan yuklendi!');
-            event.target.value = ''; // Input'u temizle
+            event.target.value = '';
         } catch (err) {
             console.error(err);
             showNotification('Excel dosyasi okunamadi!', 'error');
@@ -781,15 +1019,16 @@ function importFromExcel(event) {
     reader.readAsArrayBuffer(file);
 }
 
-// Temizleme fonksiyonlari
+// ============ TEMİZLEME ============
 function clearAllProducts() {
+    if (!isAdmin()) return;
     if (!confirm('Tum urunler silinecek. Emin misiniz?')) return;
     DB.saveProducts([]);
     showNotification('Tum urunler silindi!');
-    loadProducts();
 }
 
 function clearAllSales() {
+    if (!isAdmin()) return;
     if (!confirm('Tum satis gecmisi silinecek. Emin misiniz?')) return;
     DB.saveSales([]);
     localStorage.setItem('market_next_sale_id', '1');
@@ -797,24 +1036,13 @@ function clearAllSales() {
     showNotification('Satis gecmisi temizlendi!');
 }
 
-function clearAllData() {
-    if (!confirm('TUM VERILER silinecek! Bu islem geri alinamaz. Emin misiniz?')) return;
-    localStorage.removeItem('market_products');
-    localStorage.removeItem('market_sales');
-    localStorage.removeItem('market_next_sale_id');
-    nextSaleId = 1;
-    showNotification('Tum veriler silindi!');
-}
-
-// Event listeners
+// ============ EVENT LISTENERS ============
 elements.addToCartBtn.addEventListener('click', addToCart);
 elements.barcodeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addToCart(); });
 elements.completeSaleBtn.addEventListener('click', completeSale);
 elements.productForm.addEventListener('submit', addProduct);
 elements.closeBtn.addEventListener('click', () => elements.saleModal.classList.add('hidden'));
 elements.saleModal.addEventListener('click', (e) => { if (e.target === elements.saleModal) elements.saleModal.classList.add('hidden'); });
-
-document.addEventListener('DOMContentLoaded', () => elements.barcodeInput.focus());
 </script>
 </body>
 </html>
