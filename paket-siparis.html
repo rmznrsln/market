@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paket Siparis - Market</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        header { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        header h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        header p { color: #7f8c8d; }
+
+        .order-form { background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .order-form h2 { color: #2c3e50; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: 500; color: #2c3e50; }
+        .form-group input, .form-group textarea { padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #3498db; outline: none; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .products-section { background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .products-section h2 { color: #2c3e50; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 2px solid #27ae60; padding-bottom: 10px; }
+
+        .category-filter { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .category-btn { padding: 8px 16px; border: 2px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .category-btn:hover, .category-btn.active { background: #3498db; color: white; border-color: #3498db; }
+
+        .search-box { margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 12px 20px; border: 2px solid #ddd; border-radius: 25px; font-size: 1rem; }
+        .search-box input:focus { border-color: #3498db; outline: none; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-height: 400px; overflow-y: auto; padding: 5px; }
+
+        .product-card { background: #f8f9fa; border: 2px solid #eee; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .product-card:hover { border-color: #3498db; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .product-card.selected { border-color: #27ae60; background: #e8f8f0; }
+        .product-card .name { font-weight: 500; margin-bottom: 5px; font-size: 0.9rem; color: #2c3e50; }
+        .product-card .price { color: #27ae60; font-weight: bold; font-size: 1.1rem; }
+        .product-card .qty-control { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        .product-card .qty-control button { width: 28px; height: 28px; border: none; background: #3498db; color: white; border-radius: 50%; cursor: pointer; font-size: 1rem; }
+        .product-card .qty-control button:hover { background: #2980b9; }
+        .product-card .qty-control span { font-weight: bold; min-width: 30px; }
+
+        .cart-section { background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: sticky; bottom: 20px; }
+        .cart-section h2 { color: #2c3e50; margin-bottom: 15px; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+        .cart-section h2 .item-count { background: #e74c3c; color: white; padding: 2px 10px; border-radius: 15px; font-size: 0.9rem; }
+
+        .cart-items { max-height: 200px; overflow-y: auto; margin-bottom: 15px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; }
+        .cart-item .info { flex: 1; }
+        .cart-item .info .name { font-weight: 500; }
+        .cart-item .info .detail { font-size: 0.85rem; color: #7f8c8d; }
+        .cart-item .price { font-weight: bold; color: #27ae60; }
+        .cart-item .remove { background: #e74c3c; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; margin-left: 10px; }
+
+        .cart-empty { text-align: center; color: #999; padding: 30px; }
+
+        .cart-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; padding: 15px; background: #2c3e50; color: white; border-radius: 8px; margin-bottom: 15px; }
+
+        .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); }
+        .submit-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        .success-message { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .success-message.show { display: flex; }
+        .success-content { background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 400px; animation: popIn 0.3s ease; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .success-content .icon { font-size: 4rem; margin-bottom: 20px; }
+        .success-content h2 { color: #27ae60; margin-bottom: 15px; }
+        .success-content p { color: #666; margin-bottom: 20px; }
+        .success-content .order-no { font-size: 1.5rem; font-weight: bold; color: #2c3e50; background: #f0f0f0; padding: 10px 20px; border-radius: 8px; display: inline-block; }
+        .success-content button { margin-top: 20px; padding: 12px 30px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+
+        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 500; z-index: 1001; animation: slideIn 0.3s ease; }
+        .notification.success { background: #27ae60; }
+        .notification.error { background: #e74c3c; }
+        .notification.hidden { display: none; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .products-grid { grid-template-columns: repeat(2, 1fr); }
+            .cart-section { position: relative; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Paket Siparis</h1>
+            <p>Siparislerinizi kolayca verin, biz getirelim!</p>
+        </header>
+
+        <div class="order-form">
+            <h2>📋 Musteri Bilgileri</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="customerName">Ad Soyad *</label>
+                    <input type="text" id="customerName" required placeholder="Adiniz Soyadiniz">
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">Telefon *</label>
+                    <input type="tel" id="customerPhone" required placeholder="05XX XXX XX XX">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="customerAddress">Adres *</label>
+                <textarea id="customerAddress" required placeholder="Teslimat adresinizi yazin..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="customerNote">Siparis Notu (Opsiyonel)</label>
+                <input type="text" id="customerNote" placeholder="Ozel istekleriniz varsa yazin...">
+            </div>
+        </div>
+
+        <div class="products-section">
+            <h2>🛍️ Urunler</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Urun ara..." oninput="filterProducts()">
+            </div>
+            <div class="category-filter" id="categoryFilter"></div>
+            <div class="products-grid" id="productsGrid"></div>
+        </div>
+
+        <div class="cart-section">
+            <h2>
+                Sepetiniz
+                <span class="item-count" id="cartCount">0</span>
+            </h2>
+            <div class="cart-items" id="cartItems">
+                <div class="cart-empty">Sepetiniz bos</div>
+            </div>
+            <div class="cart-total">
+                <span>Toplam:</span>
+                <span id="cartTotal">0.00 TL</span>
+            </div>
+            <button class="submit-btn" id="submitBtn" disabled onclick="submitOrder()">
+                Siparis Ver
+            </button>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        <div class="success-content">
+            <div class="icon">✅</div>
+            <h2>Siparisiniz Alindi!</h2>
+            <p>En kisa surede hazirlayip teslim edecegiz.</p>
+            <div class="order-no" id="orderNo">#0001</div>
+            <button onclick="resetOrder()">Yeni Siparis Ver</button>
+        </div>
+    </div>
+
+    <div class="notification hidden" id="notification"></div>
+
+<script>
+// Urunleri localStorage'dan al
+function getProducts() {
+    return JSON.parse(localStorage.getItem('market_products') || '[]');
+}
+
+// Bekleyen siparisleri kaydet
+function getPendingOrders() {
+    return JSON.parse(localStorage.getItem('market_pending_orders') || '[]');
+}
+
+function savePendingOrders(orders) {
+    localStorage.setItem('market_pending_orders', JSON.stringify(orders));
+}
+
+// Siparis numarasi
+function getNextOrderId() {
+    let id = parseInt(localStorage.getItem('market_next_order_id') || '1');
+    localStorage.setItem('market_next_order_id', (id + 1).toString());
+    return id;
+}
+
+// Sepet
+let cart = [];
+
+// Kategori tespiti
+function getCategory(barcode) {
+    const bc = parseInt(barcode);
+    if (bc >= 113 && bc <= 127) return 'Icecek';
+    if (bc >= 128 && bc <= 140) return 'Ekmek';
+    if (bc >= 141 && bc <= 160) return 'Atistirmalik';
+    if (bc >= 161 && bc <= 175) return 'Tatli';
+    if (bc >= 176 && bc <= 188) return 'Sut Urunleri';
+    if (bc >= 189 && bc <= 200) return 'Temel Gida';
+    if (bc >= 201 && bc <= 210) return 'Konserve';
+    if (bc >= 211 && bc <= 225) return 'Temizlik';
+    return 'Diger';
+}
+
+// Urunleri yukle
+function loadProducts() {
+    const products = getProducts();
+    const grid = document.getElementById('productsGrid');
+    const categoryFilter = document.getElementById('categoryFilter');
+
+    if (products.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1;">Henuz urun eklenmemis. Lutfen market yoneticisi ile iletisime gecin.</p>';
+        return;
+    }
+
+    // Kategorileri topla
+    const categories = new Set(['Tumu']);
+    products.forEach(p => categories.add(getCategory(p.barcode)));
+
+    // Kategori butonlari
+    categoryFilter.innerHTML = '';
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'category-btn' + (cat === 'Tumu' ? ' active' : '');
+        btn.textContent = cat;
+        btn.onclick = () => {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterProducts();
+        };
+        categoryFilter.appendChild(btn);
+    });
+
+    renderProducts(products);
+}
+
+function renderProducts(products) {
+    const grid = document.getElementById('productsGrid');
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const activeCategory = document.querySelector('.category-btn.active')?.textContent || 'Tumu';
+
+    const filtered = products.filter(p => {
+        const matchSearch = p.name.toLowerCase().includes(search) || p.barcode.includes(search);
+        const matchCategory = activeCategory === 'Tumu' || getCategory(p.barcode) === activeCategory;
+        return matchSearch && matchCategory;
+    });
+
+    grid.innerHTML = '';
+    filtered.forEach(product => {
+        const cartItem = cart.find(c => c.barcode === product.barcode);
+        const qty = cartItem ? cartItem.quantity : 0;
+
+        const card = document.createElement('div');
+        card.className = 'product-card' + (qty > 0 ? ' selected' : '');
+        card.innerHTML = `
+            <div class="name">${escapeHtml(product.name)}</div>
+            <div class="price">${parseFloat(product.price).toFixed(2)} TL</div>
+            <div class="qty-control">
+                <button onclick="event.stopPropagation(); updateCart('${product.barcode}', -1)">-</button>
+                <span>${qty}</span>
+                <button onclick="event.stopPropagation(); updateCart('${product.barcode}', 1)">+</button>
+            </div>
+        `;
+        card.onclick = () => updateCart(product.barcode, 1);
+        grid.appendChild(card);
+    });
+}
+
+function filterProducts() {
+    renderProducts(getProducts());
+}
+
+function updateCart(barcode, change) {
+    const products = getProducts();
+    const product = products.find(p => p.barcode === barcode);
+    if (!product) return;
+
+    const existingIndex = cart.findIndex(c => c.barcode === barcode);
+
+    if (existingIndex >= 0) {
+        cart[existingIndex].quantity += change;
+        if (cart[existingIndex].quantity <= 0) {
+            cart.splice(existingIndex, 1);
+        }
+    } else if (change > 0) {
+        cart.push({
+            barcode: product.barcode,
+            name: product.name,
+            price: parseFloat(product.price),
+            quantity: 1
+        });
+    }
+
+    renderProducts(products);
+    renderCart();
+}
+
+function removeFromCart(barcode) {
+    cart = cart.filter(c => c.barcode !== barcode);
+    renderProducts(getProducts());
+    renderCart();
+}
+
+function renderCart() {
+    const cartItems = document.getElementById('cartItems');
+    const cartCount = document.getElementById('cartCount');
+    const cartTotal = document.getElementById('cartTotal');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const totalItems = cart.reduce((sum, c) => sum + c.quantity, 0);
+    const totalPrice = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+
+    cartCount.textContent = totalItems;
+    cartTotal.textContent = totalPrice.toFixed(2) + ' TL';
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<div class="cart-empty">Sepetiniz bos</div>';
+        submitBtn.disabled = true;
+        return;
+    }
+
+    submitBtn.disabled = false;
+
+    let html = '';
+    cart.forEach(item => {
+        html += `
+            <div class="cart-item">
+                <div class="info">
+                    <div class="name">${escapeHtml(item.name)}</div>
+                    <div class="detail">${item.quantity} x ${item.price.toFixed(2)} TL</div>
+                </div>
+                <div class="price">${(item.quantity * item.price).toFixed(2)} TL</div>
+                <button class="remove" onclick="removeFromCart('${item.barcode}')">&times;</button>
+            </div>
+        `;
+    });
+    cartItems.innerHTML = html;
+}
+
+function submitOrder() {
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    const address = document.getElementById('customerAddress').value.trim();
+    const note = document.getElementById('customerNote').value.trim();
+
+    if (!name || !phone || !address) {
+        showNotification('Lutfen zorunlu alanlari doldurun!', 'error');
+        return;
+    }
+
+    if (cart.length === 0) {
+        showNotification('Sepetiniz bos!', 'error');
+        return;
+    }
+
+    const orderId = getNextOrderId();
+    const totalAmount = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+
+    const order = {
+        id: orderId,
+        customer: {
+            name: name,
+            phone: phone,
+            address: address,
+            note: note
+        },
+        items: cart.map(c => ({
+            product_barcode: c.barcode,
+            product_name: c.name,
+            quantity: c.quantity,
+            unit_price: c.price,
+            total_price: c.quantity * c.price
+        })),
+        total_amount: totalAmount,
+        created_at: new Date().toISOString(),
+        status: 'pending'
+    };
+
+    const orders = getPendingOrders();
+    orders.push(order);
+    savePendingOrders(orders);
+
+    // Basari mesaji goster
+    document.getElementById('orderNo').textContent = '#' + String(orderId).padStart(4, '0');
+    document.getElementById('successMessage').classList.add('show');
+}
+
+function resetOrder() {
+    cart = [];
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerPhone').value = '';
+    document.getElementById('customerAddress').value = '';
+    document.getElementById('customerNote').value = '';
+    document.getElementById('successMessage').classList.remove('show');
+    renderProducts(getProducts());
+    renderCart();
+}
+
+function showNotification(message, type = 'success') {
+    const notif = document.getElementById('notification');
+    notif.textContent = message;
+    notif.className = `notification ${type}`;
+    setTimeout(() => notif.classList.add('hidden'), 3000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Sayfa yuklenince
+loadProducts();
+renderCart();
+</script>
+</body>
+</html>

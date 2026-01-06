@@ -282,6 +282,130 @@
             align-items: center;
             margin-bottom: 20px;
         }
+
+        /* Paket Siparisler */
+        .pending-orders {
+            margin-top: 20px;
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .pending-orders h3 {
+            color: #e65100;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .pending-orders h3 .badge {
+            background: #e65100;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        .order-card {
+            background: white;
+            border: 1px solid #ffcc80;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .order-card:hover {
+            border-color: #ff9800;
+            box-shadow: 0 2px 8px rgba(255,152,0,0.3);
+        }
+        .order-card.selected {
+            border-color: #27ae60;
+            background: #e8f5e9;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .order-id {
+            font-weight: bold;
+            color: #e65100;
+        }
+        .order-time {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        .order-customer {
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .order-customer strong {
+            color: #2c3e50;
+        }
+        .order-total {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .order-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .load-order-btn {
+            background: #3498db;
+            color: white;
+        }
+        .load-order-btn:hover {
+            background: #2980b9;
+        }
+        .cancel-order-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        .cancel-order-btn:hover {
+            background: #c0392b;
+        }
+        .no-orders {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+        .sale-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .sale-type-badge.normal {
+            background: #3498db;
+            color: white;
+        }
+        .sale-type-badge.paket {
+            background: #e67e22;
+            color: white;
+        }
+        .paket-info {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .paket-info p {
+            margin: 3px 0;
+        }
     </style>
 </head>
 <body>
@@ -379,6 +503,17 @@
                     <button id="completeSaleBtn" class="complete-btn" disabled>Satisi Tamamla</button>
                 </div>
             </div>
+
+            <!-- Bekleyen Paket Siparisler -->
+            <div class="pending-orders" id="pendingOrdersSection">
+                <h3>
+                    📦 Bekleyen Paket Siparisler
+                    <span class="badge" id="pendingOrderCount">0</span>
+                </h3>
+                <div id="pendingOrdersList">
+                    <div class="no-orders">Bekleyen siparis yok</div>
+                </div>
+            </div>
         </section>
 
         <!-- Urun Yonetimi (Sadece Admin) -->
@@ -425,10 +560,16 @@
                 <select id="historyCashierFilter" onchange="loadSalesHistory()">
                     <option value="">Tumu</option>
                 </select>
+                <label>Tip:</label>
+                <select id="historyTypeFilter" onchange="loadSalesHistory()">
+                    <option value="">Tumu</option>
+                    <option value="normal">Normal</option>
+                    <option value="paket">Paket Servis</option>
+                </select>
                 <span id="historyTotalInfo" style="margin-left:auto; font-weight:bold;"></span>
             </div>
             <table>
-                <thead><tr><th>Satis No</th><th>Saat</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
+                <thead><tr><th>Satis No</th><th>Saat</th><th>Tip</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
                 <tbody id="salesBody"></tbody>
             </table>
         </section>
@@ -463,9 +604,15 @@
                 <select id="kasaCashierFilter" onchange="loadKasaRaporu()">
                     <option value="">Tumu</option>
                 </select>
+                <label>Tip:</label>
+                <select id="kasaTypeFilter" onchange="loadKasaRaporu()">
+                    <option value="">Tumu</option>
+                    <option value="normal">Normal</option>
+                    <option value="paket">Paket Servis</option>
+                </select>
             </div>
             <table>
-                <thead><tr><th>Satis No</th><th>Saat</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
+                <thead><tr><th>Satis No</th><th>Saat</th><th>Tip</th><th>Kasiyer</th><th>Toplam</th><th>Detay</th></tr></thead>
                 <tbody id="kasaBody"></tbody>
             </table>
         </section>
@@ -554,9 +701,10 @@
 
             <div class="settings-section">
                 <h3>Hakkinda</h3>
-                <p>Market Satis Sistemi v1.3</p>
+                <p>Market Satis Sistemi v1.4</p>
                 <p style="color:#666; margin-top:5px;">Veriler bu tarayicida saklanmaktadir.</p>
                 <p style="color:#666; margin-top:5px;">100 ornek urun yuklu (barkod: 113-212)</p>
+                <p style="color:#666; margin-top:5px;"><a href="paket-siparis.html" target="_blank" style="color:#3498db;">Paket Siparis Sayfasi</a></p>
             </div>
         </section>
 
@@ -774,6 +922,7 @@ initSampleProducts();
 let currentUser = JSON.parse(sessionStorage.getItem('market_current_user') || 'null');
 let cart = [];
 let nextSaleId = parseInt(localStorage.getItem('market_next_sale_id') || '1');
+let currentPaketOrder = null; // Aktif paket siparis
 
 function login(username, password) {
     const users = DB.getUsers();
@@ -813,6 +962,7 @@ function showMainApp() {
     applyPermissions();
     document.getElementById('barcodeInput').focus();
     updateTodayTotal();
+    loadPendingOrders();
 }
 
 function applyPermissions() {
@@ -917,7 +1067,7 @@ function showTab(tabId) {
     if (tabId === 'history') loadSalesHistory();
     if (tabId === 'kasaraporu') { setKasaToday(); loadKasaRaporu(); }
     if (tabId === 'settings') loadUsers();
-    if (tabId === 'sales') { elements.barcodeInput.focus(); updateTodayTotal(); }
+    if (tabId === 'sales') { elements.barcodeInput.focus(); updateTodayTotal(); loadPendingOrders(); }
 }
 
 function showNotification(message, type = 'success') {
@@ -1033,18 +1183,153 @@ function completeSale() {
         total_amount: totalAmount,
         created_at: new Date().toISOString(),
         cashier: currentUser.username,
-        items: [...cart]
+        items: [...cart],
+        sale_type: currentPaketOrder ? 'paket' : 'normal'
     };
+
+    // Paket siparis ise musteri bilgilerini ekle
+    if (currentPaketOrder) {
+        sale.customer = currentPaketOrder.customer;
+        sale.order_id = currentPaketOrder.id;
+
+        // Bekleyen siparislerden cikar
+        const pendingOrders = getPendingOrders();
+        const updatedOrders = pendingOrders.filter(o => o.id !== currentPaketOrder.id);
+        savePendingOrders(updatedOrders);
+
+        showNotification(`Paket siparis #${currentPaketOrder.id} tamamlandi! Toplam: ${totalAmount.toFixed(2)} TL`);
+        currentPaketOrder = null;
+        loadPendingOrders();
+    } else {
+        showNotification(`Satis tamamlandi! Toplam: ${totalAmount.toFixed(2)} TL`);
+    }
 
     sales.unshift(sale);
     DB.saveSales(sales);
     localStorage.setItem('market_next_sale_id', nextSaleId.toString());
 
-    showNotification(`Satis tamamlandi! Toplam: ${totalAmount.toFixed(2)} TL`);
     cart = [];
     renderCart();
     elements.productInfo.classList.add('hidden');
     updateTodayTotal();
+    updateCompleteBtnText();
+}
+
+// Sepet buton metnini guncelle
+function updateCompleteBtnText() {
+    const btn = elements.completeSaleBtn;
+    if (currentPaketOrder) {
+        btn.textContent = `Paketi Tamamla (#${currentPaketOrder.id})`;
+        btn.style.background = '#e67e22';
+    } else {
+        btn.textContent = 'Satisi Tamamla';
+        btn.style.background = '';
+    }
+}
+
+// ============ PAKET SİPARİŞ YÖNETİMİ ============
+function getPendingOrders() {
+    return JSON.parse(localStorage.getItem('market_pending_orders') || '[]');
+}
+
+function savePendingOrders(orders) {
+    localStorage.setItem('market_pending_orders', JSON.stringify(orders));
+}
+
+function loadPendingOrders() {
+    const orders = getPendingOrders();
+    const container = document.getElementById('pendingOrdersList');
+    const countBadge = document.getElementById('pendingOrderCount');
+
+    countBadge.textContent = orders.length;
+
+    if (orders.length === 0) {
+        container.innerHTML = '<div class="no-orders">Bekleyen siparis yok</div>';
+        document.getElementById('pendingOrdersSection').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('pendingOrdersSection').style.display = 'block';
+
+    let html = '';
+    orders.forEach(order => {
+        const time = new Date(order.created_at).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+        const isSelected = currentPaketOrder && currentPaketOrder.id === order.id;
+
+        html += `
+            <div class="order-card ${isSelected ? 'selected' : ''}" onclick="selectPaketOrder(${order.id})">
+                <div class="order-header">
+                    <span class="order-id">#${String(order.id).padStart(4, '0')}</span>
+                    <span class="order-time">${time}</span>
+                </div>
+                <div class="order-customer">
+                    <strong>${escapeHtml(order.customer.name)}</strong> - ${escapeHtml(order.customer.phone)}<br>
+                    <small>${escapeHtml(order.customer.address)}</small>
+                    ${order.customer.note ? '<br><em style="color:#666;">Not: ' + escapeHtml(order.customer.note) + '</em>' : ''}
+                </div>
+                <div class="order-total">${order.total_amount.toFixed(2)} TL (${order.items.length} kalem)</div>
+                <div class="order-actions">
+                    <button class="load-order-btn" onclick="event.stopPropagation(); loadPaketToCart(${order.id})">Sepete Yukle</button>
+                    <button class="cancel-order-btn" onclick="event.stopPropagation(); cancelPaketOrder(${order.id})">Iptal</button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function selectPaketOrder(orderId) {
+    const orders = getPendingOrders();
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        loadPaketToCart(orderId);
+    }
+}
+
+function loadPaketToCart(orderId) {
+    const orders = getPendingOrders();
+    const order = orders.find(o => o.id === orderId);
+
+    if (!order) {
+        showNotification('Siparis bulunamadi!', 'error');
+        return;
+    }
+
+    // Mevcut sepeti temizle ve paket siparisi yukle
+    cart = order.items.map(item => ({
+        product_id: null,
+        product_name: item.product_name,
+        product_barcode: item.product_barcode,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price
+    }));
+
+    currentPaketOrder = order;
+    renderCart();
+    updateCompleteBtnText();
+    loadPendingOrders();
+
+    showNotification(`Siparis #${order.id} sepete yuklendi. Hazirlayin ve "Paketi Tamamla" tusuna basin.`);
+}
+
+function cancelPaketOrder(orderId) {
+    if (!confirm('Bu siparisi iptal etmek istediginize emin misiniz?')) return;
+
+    const orders = getPendingOrders();
+    const updatedOrders = orders.filter(o => o.id !== orderId);
+    savePendingOrders(updatedOrders);
+
+    // Eger aktif siparis iptal edildiyse sepeti temizle
+    if (currentPaketOrder && currentPaketOrder.id === orderId) {
+        cart = [];
+        currentPaketOrder = null;
+        renderCart();
+        updateCompleteBtnText();
+    }
+
+    loadPendingOrders();
+    showNotification('Siparis iptal edildi!');
 }
 
 // ============ ÜRÜN YÖNETİMİ ============
@@ -1116,13 +1401,15 @@ function getTodayString() {
     return new Date().toISOString().slice(0, 10);
 }
 
-function getSalesByDate(dateStr, cashierFilter = '') {
+function getSalesByDate(dateStr, cashierFilter = '', typeFilter = '') {
     const sales = DB.getSales();
     return sales.filter(sale => {
         const saleDate = sale.created_at.slice(0, 10);
         const matchDate = saleDate === dateStr;
         const matchCashier = !cashierFilter || sale.cashier === cashierFilter;
-        return matchDate && matchCashier;
+        const saleType = sale.sale_type || 'normal';
+        const matchType = !typeFilter || saleType === typeFilter;
+        return matchDate && matchCashier && matchType;
     });
 }
 
@@ -1161,23 +1448,29 @@ function updateCashierFilters() {
 function loadSalesHistory() {
     updateCashierFilters();
     const cashierFilter = document.getElementById('historyCashierFilter').value;
-    const todaySales = getSalesByDate(getTodayString(), cashierFilter);
+    const typeFilter = document.getElementById('historyTypeFilter').value;
+    const todaySales = getSalesByDate(getTodayString(), cashierFilter, typeFilter);
 
     const totalInfo = document.getElementById('historyTotalInfo');
     const total = todaySales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0);
     totalInfo.textContent = `Toplam: ${total.toFixed(2)} TL (${todaySales.length} satis)`;
 
     if (todaySales.length === 0) {
-        elements.salesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Bugun satis yapilmamis</td></tr>';
+        elements.salesBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Bugun satis yapilmamis</td></tr>';
         return;
     }
     let html = '';
     todaySales.forEach(sale => {
         const time = new Date(sale.created_at).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+        const saleType = sale.sale_type || 'normal';
+        const typeBadge = saleType === 'paket'
+            ? '<span class="sale-type-badge paket">Paket</span>'
+            : '<span class="sale-type-badge normal">Normal</span>';
         html += `
             <tr>
                 <td>#${sale.id}</td>
                 <td>${time}</td>
+                <td>${typeBadge}</td>
                 <td><span class="cashier-link" onclick="filterByCashier('history', '${escapeHtml(sale.cashier || '')}')">${escapeHtml(sale.cashier || '-')}</span></td>
                 <td>${parseFloat(sale.total_amount).toFixed(2)} TL</td>
                 <td><button class="detail-btn" onclick="showSaleDetail(${sale.id})">Detay</button></td>
@@ -1206,7 +1499,8 @@ function loadKasaRaporu() {
     updateCashierFilters();
     const dateFilter = document.getElementById('kasaDateFilter').value || getTodayString();
     const cashierFilter = document.getElementById('kasaCashierFilter').value;
-    const sales = getSalesByDate(dateFilter, cashierFilter);
+    const typeFilter = document.getElementById('kasaTypeFilter').value;
+    const sales = getSalesByDate(dateFilter, cashierFilter, typeFilter);
 
     // Ozet kartlarini guncelle
     const total = sales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0);
@@ -1220,17 +1514,22 @@ function loadKasaRaporu() {
     // Satis listesi
     const kasaBody = document.getElementById('kasaBody');
     if (sales.length === 0) {
-        kasaBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Bu tarihte satis yok</td></tr>';
+        kasaBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Bu tarihte satis yok</td></tr>';
         return;
     }
 
     let html = '';
     sales.forEach(sale => {
         const time = new Date(sale.created_at).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+        const saleType = sale.sale_type || 'normal';
+        const typeBadge = saleType === 'paket'
+            ? '<span class="sale-type-badge paket">Paket</span>'
+            : '<span class="sale-type-badge normal">Normal</span>';
         html += `
             <tr>
                 <td>#${sale.id}</td>
                 <td>${time}</td>
+                <td>${typeBadge}</td>
                 <td><span class="cashier-link" onclick="filterByCashier('kasa', '${escapeHtml(sale.cashier || '')}')">${escapeHtml(sale.cashier || '-')}</span></td>
                 <td>${parseFloat(sale.total_amount).toFixed(2)} TL</td>
                 <td><button class="detail-btn" onclick="showSaleDetail(${sale.id})">Detay</button></td>
@@ -1252,11 +1551,31 @@ function showSaleDetail(id) {
     if (!sale) return;
 
     const date = new Date(sale.created_at).toLocaleString('tr-TR');
+    const saleType = sale.sale_type || 'normal';
+    const typeBadge = saleType === 'paket'
+        ? '<span class="sale-type-badge paket">Paket Servis</span>'
+        : '<span class="sale-type-badge normal">Normal Satis</span>';
+
     let html = `
-        <p><strong>Satis No:</strong> #${sale.id}</p>
+        <p><strong>Satis No:</strong> #${sale.id} ${typeBadge}</p>
         <p><strong>Tarih:</strong> ${date}</p>
         <p><strong>Kasiyer:</strong> ${escapeHtml(sale.cashier || '-')}</p>
         <p><strong>Toplam:</strong> ${parseFloat(sale.total_amount).toFixed(2)} TL</p>
+    `;
+
+    // Paket siparis ise musteri bilgilerini goster
+    if (saleType === 'paket' && sale.customer) {
+        html += `
+            <div class="paket-info">
+                <p><strong>Musteri:</strong> ${escapeHtml(sale.customer.name)}</p>
+                <p><strong>Telefon:</strong> ${escapeHtml(sale.customer.phone)}</p>
+                <p><strong>Adres:</strong> ${escapeHtml(sale.customer.address)}</p>
+                ${sale.customer.note ? '<p><strong>Not:</strong> ' + escapeHtml(sale.customer.note) + '</p>' : ''}
+            </div>
+        `;
+    }
+
+    html += `
         <table>
             <thead><tr><th>Urun</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
             <tbody>
