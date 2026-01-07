@@ -27,10 +27,6 @@
         .products-section { background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .products-section h2 { color: #2c3e50; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 2px solid #27ae60; padding-bottom: 10px; }
 
-        .category-filter { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .category-btn { padding: 8px 16px; border: 2px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
-        .category-btn:hover, .category-btn.active { background: #3498db; color: white; border-color: #3498db; }
-
         .search-box { margin-bottom: 20px; }
         .search-box input { width: 100%; padding: 12px 20px; border: 2px solid #ddd; border-radius: 25px; font-size: 1rem; }
         .search-box input:focus { border-color: #3498db; outline: none; }
@@ -83,6 +79,10 @@
         .notification.hidden { display: none; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .loading-spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #3498db; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 600px) {
             .products-grid { grid-template-columns: repeat(2, 1fr); }
             .cart-section { position: relative; }
@@ -92,12 +92,12 @@
 <body>
     <div class="container">
         <header>
-            <h1>🛒 Paket Siparis</h1>
+            <h1>Paket Siparis</h1>
             <p>Siparislerinizi kolayca verin, biz getirelim!</p>
         </header>
 
         <div class="order-form">
-            <h2>📋 Musteri Bilgileri</h2>
+            <h2>Musteri Bilgileri</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label for="customerName">Ad Soyad *</label>
@@ -119,12 +119,16 @@
         </div>
 
         <div class="products-section">
-            <h2>🛍️ Urunler</h2>
+            <h2>Urunler</h2>
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Urun ara..." oninput="filterProducts()">
             </div>
-            <div class="category-filter" id="categoryFilter"></div>
-            <div class="products-grid" id="productsGrid"></div>
+            <div class="products-grid" id="productsGrid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Urunler yukleniyor...</p>
+                </div>
+            </div>
         </div>
 
         <div class="cart-section">
@@ -147,10 +151,10 @@
 
     <div class="success-message" id="successMessage">
         <div class="success-content">
-            <div class="icon">✅</div>
+            <div class="icon">&#10004;</div>
             <h2>Siparisiniz Alindi!</h2>
             <p>En kisa surede hazirlayip teslim edecegiz.</p>
-            <div class="order-no" id="orderNo">#0001</div>
+            <div class="order-no" id="orderNo">#PKT-0001</div>
             <button onclick="resetOrder()">Yeni Siparis Ver</button>
         </div>
     </div>
@@ -158,86 +162,44 @@
     <div class="notification hidden" id="notification"></div>
 
 <script>
-// Urunleri localStorage'dan al
-function getProducts() {
-    return JSON.parse(localStorage.getItem('market_products') || '[]');
-}
+const API_URL = 'api/orders.php';
 
-// Bekleyen siparisleri kaydet
-function getPendingOrders() {
-    return JSON.parse(localStorage.getItem('market_pending_orders') || '[]');
-}
-
-function savePendingOrders(orders) {
-    localStorage.setItem('market_pending_orders', JSON.stringify(orders));
-}
-
-// Siparis numarasi
-function getNextOrderId() {
-    let id = parseInt(localStorage.getItem('market_next_order_id') || '1');
-    localStorage.setItem('market_next_order_id', (id + 1).toString());
-    return id;
-}
-
-// Sepet
+let products = [];
 let cart = [];
 
-// Kategori tespiti
-function getCategory(barcode) {
-    const bc = parseInt(barcode);
-    if (bc >= 113 && bc <= 127) return 'Icecek';
-    if (bc >= 128 && bc <= 140) return 'Ekmek';
-    if (bc >= 141 && bc <= 160) return 'Atistirmalik';
-    if (bc >= 161 && bc <= 175) return 'Tatli';
-    if (bc >= 176 && bc <= 188) return 'Sut Urunleri';
-    if (bc >= 189 && bc <= 200) return 'Temel Gida';
-    if (bc >= 201 && bc <= 210) return 'Konserve';
-    if (bc >= 211 && bc <= 225) return 'Temizlik';
-    return 'Diger';
-}
+// Sayfa yuklenince urunleri cek
+document.addEventListener('DOMContentLoaded', loadProducts);
 
-// Urunleri yukle
-function loadProducts() {
-    const products = getProducts();
-    const grid = document.getElementById('productsGrid');
-    const categoryFilter = document.getElementById('categoryFilter');
+// Urunleri API'den yukle
+async function loadProducts() {
+    try {
+        const response = await fetch(`${API_URL}?action=public-products`);
+        const result = await response.json();
 
-    if (products.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1;">Henuz urun eklenmemis. Lutfen market yoneticisi ile iletisime gecin.</p>';
-        return;
+        if (result.success) {
+            products = result.data;
+            renderProducts();
+        } else {
+            showError('Urunler yuklenemedi');
+        }
+    } catch (error) {
+        showError('Baglanti hatasi. Lutfen sayfayi yenileyin.');
+        console.error('Error loading products:', error);
     }
-
-    // Kategorileri topla
-    const categories = new Set(['Tumu']);
-    products.forEach(p => categories.add(getCategory(p.barcode)));
-
-    // Kategori butonlari
-    categoryFilter.innerHTML = '';
-    categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'category-btn' + (cat === 'Tumu' ? ' active' : '');
-        btn.textContent = cat;
-        btn.onclick = () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterProducts();
-        };
-        categoryFilter.appendChild(btn);
-    });
-
-    renderProducts(products);
 }
 
-function renderProducts(products) {
+function renderProducts() {
     const grid = document.getElementById('productsGrid');
     const search = document.getElementById('searchInput').value.toLowerCase();
-    const activeCategory = document.querySelector('.category-btn.active')?.textContent || 'Tumu';
 
-    const filtered = products.filter(p => {
-        const matchSearch = p.name.toLowerCase().includes(search) || p.barcode.includes(search);
-        const matchCategory = activeCategory === 'Tumu' || getCategory(p.barcode) === activeCategory;
-        return matchSearch && matchCategory;
-    });
+    const filtered = products.filter(p =>
+        p.name.toLowerCase().includes(search) || p.barcode.includes(search)
+    );
+
+    if (filtered.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1;">Urun bulunamadi</p>';
+        return;
+    }
 
     grid.innerHTML = '';
     filtered.forEach(product => {
@@ -261,11 +223,10 @@ function renderProducts(products) {
 }
 
 function filterProducts() {
-    renderProducts(getProducts());
+    renderProducts();
 }
 
 function updateCart(barcode, change) {
-    const products = getProducts();
     const product = products.find(p => p.barcode === barcode);
     if (!product) return;
 
@@ -285,13 +246,13 @@ function updateCart(barcode, change) {
         });
     }
 
-    renderProducts(products);
+    renderProducts();
     renderCart();
 }
 
 function removeFromCart(barcode) {
     cart = cart.filter(c => c.barcode !== barcode);
-    renderProducts(getProducts());
+    renderProducts();
     renderCart();
 }
 
@@ -331,7 +292,7 @@ function renderCart() {
     cartItems.innerHTML = html;
 }
 
-function submitOrder() {
+async function submitOrder() {
     const name = document.getElementById('customerName').value.trim();
     const phone = document.getElementById('customerPhone').value.trim();
     const address = document.getElementById('customerAddress').value.trim();
@@ -347,36 +308,43 @@ function submitOrder() {
         return;
     }
 
-    const orderId = getNextOrderId();
-    const totalAmount = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Gonderiliyor...';
 
-    const order = {
-        id: orderId,
-        customer: {
-            name: name,
-            phone: phone,
-            address: address,
-            note: note
-        },
-        items: cart.map(c => ({
-            product_barcode: c.barcode,
-            product_name: c.name,
-            quantity: c.quantity,
-            unit_price: c.price,
-            total_price: c.quantity * c.price
-        })),
-        total_amount: totalAmount,
-        created_at: new Date().toISOString(),
-        status: 'pending'
-    };
+    try {
+        const response = await fetch(`${API_URL}?action=create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                customer_name: name,
+                customer_phone: phone,
+                customer_address: address,
+                customer_note: note,
+                items: cart.map(c => ({
+                    barcode: c.barcode,
+                    quantity: c.quantity
+                }))
+            })
+        });
 
-    const orders = getPendingOrders();
-    orders.push(order);
-    savePendingOrders(orders);
+        const result = await response.json();
 
-    // Basari mesaji goster
-    document.getElementById('orderNo').textContent = '#' + String(orderId).padStart(4, '0');
-    document.getElementById('successMessage').classList.add('show');
+        if (result.success) {
+            document.getElementById('orderNo').textContent = result.data.order_no;
+            document.getElementById('successMessage').classList.add('show');
+        } else {
+            showNotification(result.error || 'Siparis gonderilemedi', 'error');
+        }
+    } catch (error) {
+        showNotification('Baglanti hatasi. Lutfen tekrar deneyin.', 'error');
+        console.error('Error submitting order:', error);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Siparis Ver';
+    }
 }
 
 function resetOrder() {
@@ -386,7 +354,7 @@ function resetOrder() {
     document.getElementById('customerAddress').value = '';
     document.getElementById('customerNote').value = '';
     document.getElementById('successMessage').classList.remove('show');
-    renderProducts(getProducts());
+    renderProducts();
     renderCart();
 }
 
@@ -397,15 +365,16 @@ function showNotification(message, type = 'success') {
     setTimeout(() => notif.classList.add('hidden'), 3000);
 }
 
+function showError(message) {
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = `<p style="text-align:center; color:#e74c3c; grid-column:1/-1;">${escapeHtml(message)}</p>`;
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
-// Sayfa yuklenince
-loadProducts();
-renderCart();
 </script>
 </body>
 </html>

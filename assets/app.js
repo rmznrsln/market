@@ -7,7 +7,8 @@
 const API = {
     auth: 'api/auth.php',
     products: 'api/products.php',
-    sales: 'api/sales.php'
+    sales: 'api/sales.php',
+    orders: 'api/orders.php'
 };
 
 // Uygulama durumu
@@ -15,6 +16,9 @@ const state = {
     token: localStorage.getItem('auth_token'),
     user: JSON.parse(localStorage.getItem('auth_user') || 'null'),
     cart: [],
+    products: [],
+    users: [],
+    packages: [],
     currentPage: {
         products: 1,
         sales: 1
@@ -85,7 +89,40 @@ function initializeElements() {
     // Modal
     elements.saleModal = document.getElementById('saleModal');
     elements.saleDetails = document.getElementById('saleDetails');
-    elements.closeBtn = document.querySelector('.close-btn');
+
+    // Urun Duzenleme Modal
+    elements.editProductModal = document.getElementById('editProductModal');
+    elements.editProductForm = document.getElementById('editProductForm');
+    elements.editProductId = document.getElementById('editProductId');
+    elements.editProductBarcode = document.getElementById('editProductBarcode');
+    elements.editProductName = document.getElementById('editProductName');
+    elements.editProductPrice = document.getElementById('editProductPrice');
+    elements.editProductStock = document.getElementById('editProductStock');
+
+    // Kullanici Yonetimi
+    elements.userForm = document.getElementById('userForm');
+    elements.newUsername = document.getElementById('newUsername');
+    elements.newFullName = document.getElementById('newFullName');
+    elements.newPassword = document.getElementById('newPassword');
+    elements.newRole = document.getElementById('newRole');
+    elements.usersBody = document.getElementById('usersBody');
+
+    // Kullanici Duzenleme Modal
+    elements.editUserModal = document.getElementById('editUserModal');
+    elements.editUserForm = document.getElementById('editUserForm');
+    elements.editUserId = document.getElementById('editUserId');
+    elements.editUserFullName = document.getElementById('editUserFullName');
+    elements.editUserRole = document.getElementById('editUserRole');
+    elements.editUserActive = document.getElementById('editUserActive');
+
+    // Paket Siparisler
+    elements.packagesGrid = document.getElementById('packagesGrid');
+    elements.packageStatusFilter = document.getElementById('packageStatusFilter');
+    elements.refreshPackagesBtn = document.getElementById('refreshPackagesBtn');
+    elements.pendingPackagesBadge = document.getElementById('pendingPackagesBadge');
+    elements.packageModal = document.getElementById('packageModal');
+    elements.packageDetails = document.getElementById('packageDetails');
+    elements.packageActions = document.getElementById('packageActions');
 
     // Diger
     elements.notification = document.getElementById('notification');
@@ -134,16 +171,50 @@ function initializeEventListeners() {
         loadSalesHistory();
     });
 
-    // Modal
-    elements.closeBtn.addEventListener('click', closeModal);
-    elements.saleModal.addEventListener('click', (e) => {
-        if (e.target === elements.saleModal) closeModal();
+    // Modal - Tum close butonlari
+    document.querySelectorAll('.close-btn, .cancel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modalId = btn.dataset.modal;
+            if (modalId) {
+                document.getElementById(modalId).classList.add('hidden');
+            }
+        });
+    });
+
+    // Modal disina tiklandiginda kapat
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
     });
 
     // ESC ile modal kapat
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+        }
     });
+
+    // Urun Duzenleme
+    if (elements.editProductForm) {
+        elements.editProductForm.addEventListener('submit', updateProduct);
+    }
+
+    // Kullanici Yonetimi
+    if (elements.userForm) {
+        elements.userForm.addEventListener('submit', addUser);
+    }
+    if (elements.editUserForm) {
+        elements.editUserForm.addEventListener('submit', updateUser);
+    }
+
+    // Paket Siparisler
+    if (elements.packageStatusFilter) {
+        elements.packageStatusFilter.addEventListener('change', loadPackages);
+    }
+    if (elements.refreshPackagesBtn) {
+        elements.refreshPackagesBtn.addEventListener('click', loadPackages);
+    }
 }
 
 /**
@@ -257,6 +328,15 @@ function showMainApp() {
         elements.currentUserName.textContent = state.user.full_name;
         elements.currentUserRole.textContent = state.user.role === 'admin' ? 'Yonetici' : 'Kasiyer';
         elements.currentUserRole.className = `user-role ${state.user.role}`;
+
+        // Admin-only elementleri goster/gizle
+        document.querySelectorAll('.admin-only').forEach(el => {
+            if (state.user.role === 'admin') {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        });
     }
 
     // Barkod inputuna focus
@@ -264,6 +344,7 @@ function showMainApp() {
 
     // Verileri yukle
     loadSalesHistory();
+    loadPendingPackagesCount();
 }
 
 /**
@@ -303,6 +384,8 @@ function switchTab(tabId) {
     if (tabId === 'products') loadProducts();
     if (tabId === 'history') loadSalesHistory();
     if (tabId === 'sales') elements.barcodeInput.focus();
+    if (tabId === 'users') loadUsers();
+    if (tabId === 'packages') loadPackages();
 }
 
 /**
@@ -525,6 +608,8 @@ async function loadProducts() {
  * Urunleri render et
  */
 function renderProducts(products) {
+    state.products = products; // Urunleri sakla
+
     if (products.length === 0) {
         elements.productsBody.innerHTML = '<tr><td colspan="5" class="empty-message">Urun bulunamadi</td></tr>';
         return;
@@ -538,7 +623,8 @@ function renderProducts(products) {
                 <td>${escapeHtml(product.name)}</td>
                 <td>${parseFloat(product.price).toFixed(2)} TL</td>
                 <td>${product.stock || 0}</td>
-                <td>
+                <td class="action-btns">
+                    <button class="edit-btn" onclick="openEditProduct(${product.id})">Duzenle</button>
                     <button class="delete-btn" onclick="deleteProduct(${product.id})">Sil</button>
                 </td>
             </tr>
@@ -724,8 +810,226 @@ async function showSaleDetail(id) {
 /**
  * Modal kapat
  */
-function closeModal() {
-    elements.saleModal.classList.add('hidden');
+function closeModal(modalId) {
+    if (modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    } else {
+        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+    }
+}
+
+/**
+ * Urun duzenleme modalini ac
+ */
+function openEditProduct(productId) {
+    const product = state.products.find(p => p.id === productId);
+    if (!product) {
+        showNotification('Urun bulunamadi', 'error');
+        return;
+    }
+
+    elements.editProductId.value = product.id;
+    elements.editProductBarcode.value = product.barcode;
+    elements.editProductName.value = product.name;
+    elements.editProductPrice.value = parseFloat(product.price);
+    elements.editProductStock.value = product.stock || 0;
+
+    elements.editProductModal.classList.remove('hidden');
+}
+
+/**
+ * Urun guncelle
+ */
+async function updateProduct(e) {
+    e.preventDefault();
+
+    const id = parseInt(elements.editProductId.value);
+    const barcode = elements.editProductBarcode.value.trim();
+    const name = elements.editProductName.value.trim();
+    const price = parseFloat(elements.editProductPrice.value);
+    const stock = parseInt(elements.editProductStock.value) || 0;
+
+    if (!barcode || !name || isNaN(price)) {
+        showNotification('Tum alanlari doldurun!', 'error');
+        return;
+    }
+
+    try {
+        const result = await apiRequest(API.products, 'PUT', { id, barcode, name, price, stock });
+
+        if (result.success) {
+            showNotification('Urun guncellendi!');
+            elements.editProductModal.classList.add('hidden');
+            loadProducts();
+        } else {
+            showNotification(result.error || 'Urun guncellenemedi', 'error');
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+/**
+ * Kullanicilari yukle
+ */
+async function loadUsers() {
+    try {
+        const result = await apiRequest(`${API.auth}?action=users`);
+
+        if (result.success) {
+            state.users = result.data;
+            renderUsers(result.data);
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+/**
+ * Kullanicilari render et
+ */
+function renderUsers(users) {
+    if (!elements.usersBody) return;
+
+    if (users.length === 0) {
+        elements.usersBody.innerHTML = '<tr><td colspan="6" class="empty-message">Kullanici bulunamadi</td></tr>';
+        return;
+    }
+
+    const roleLabels = { admin: 'Yonetici', cashier: 'Kasiyer' };
+
+    let html = '';
+    users.forEach(user => {
+        const lastLogin = user.last_login ? new Date(user.last_login).toLocaleString('tr-TR') : '-';
+        const statusClass = user.is_active ? 'status-active' : 'status-inactive';
+        const statusText = user.is_active ? 'Aktif' : 'Pasif';
+
+        html += `
+            <tr>
+                <td>${escapeHtml(user.username)}</td>
+                <td>${escapeHtml(user.full_name)}</td>
+                <td>${roleLabels[user.role] || user.role}</td>
+                <td><span class="${statusClass}">${statusText}</span></td>
+                <td>${lastLogin}</td>
+                <td class="action-btns">
+                    <button class="edit-btn" onclick="openEditUser(${user.id})">Duzenle</button>
+                    <button class="delete-btn" onclick="deleteUser(${user.id})">Sil</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    elements.usersBody.innerHTML = html;
+}
+
+/**
+ * Yeni kullanici ekle
+ */
+async function addUser(e) {
+    e.preventDefault();
+
+    const username = elements.newUsername.value.trim();
+    const full_name = elements.newFullName.value.trim();
+    const password = elements.newPassword.value;
+    const role = elements.newRole.value;
+
+    if (!username || !full_name || !password) {
+        showNotification('Tum alanlari doldurun!', 'error');
+        return;
+    }
+
+    try {
+        const result = await apiRequest(`${API.auth}?action=users`, 'POST', {
+            username,
+            full_name,
+            password,
+            role
+        });
+
+        if (result.success) {
+            showNotification('Kullanici olusturuldu!');
+            elements.userForm.reset();
+            loadUsers();
+        } else {
+            showNotification(result.error || 'Kullanici olusturulamadi', 'error');
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+/**
+ * Kullanici duzenleme modalini ac
+ */
+function openEditUser(userId) {
+    const user = state.users.find(u => u.id === userId);
+    if (!user) {
+        showNotification('Kullanici bulunamadi', 'error');
+        return;
+    }
+
+    elements.editUserId.value = user.id;
+    elements.editUserFullName.value = user.full_name;
+    elements.editUserRole.value = user.role;
+    elements.editUserActive.value = user.is_active ? '1' : '0';
+
+    elements.editUserModal.classList.remove('hidden');
+}
+
+/**
+ * Kullanici guncelle
+ */
+async function updateUser(e) {
+    e.preventDefault();
+
+    const id = parseInt(elements.editUserId.value);
+    const full_name = elements.editUserFullName.value.trim();
+    const role = elements.editUserRole.value;
+    const is_active = elements.editUserActive.value === '1';
+
+    if (!full_name) {
+        showNotification('Ad soyad gerekli!', 'error');
+        return;
+    }
+
+    try {
+        const result = await apiRequest(`${API.auth}?action=users`, 'PUT', {
+            id,
+            full_name,
+            role,
+            is_active
+        });
+
+        if (result.success) {
+            showNotification('Kullanici guncellendi!');
+            elements.editUserModal.classList.add('hidden');
+            loadUsers();
+        } else {
+            showNotification(result.error || 'Kullanici guncellenemedi', 'error');
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+/**
+ * Kullanici sil
+ */
+async function deleteUser(id) {
+    if (!confirm('Bu kullaniciyi silmek istediginize emin misiniz?')) return;
+
+    try {
+        const result = await apiRequest(`${API.auth}?action=users`, 'DELETE', { id });
+
+        if (result.success) {
+            showNotification('Kullanici silindi!');
+            loadUsers();
+        } else {
+            showNotification(result.error || 'Kullanici silinemedi', 'error');
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
 }
 
 /**
@@ -798,8 +1102,260 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+/**
+ * Bekleyen paket sayisini yukle
+ */
+async function loadPendingPackagesCount() {
+    try {
+        const result = await apiRequest(`${API.orders}?active=1&limit=1`);
+        if (result.success && result.data.pending_count > 0) {
+            elements.pendingPackagesBadge.textContent = result.data.pending_count;
+            elements.pendingPackagesBadge.classList.remove('hidden');
+        } else {
+            elements.pendingPackagesBadge.classList.add('hidden');
+        }
+    } catch (error) {
+        // Sessizce hata yoksay
+    }
+}
+
+/**
+ * Paket siparisleri yukle
+ */
+async function loadPackages() {
+    const status = elements.packageStatusFilter.value;
+    let url = API.orders;
+
+    if (status === 'active') {
+        url += '?active=1';
+    } else {
+        url += `?status=${status}`;
+    }
+
+    try {
+        const result = await apiRequest(url);
+
+        if (result.success) {
+            state.packages = result.data.items;
+            renderPackages(result.data.items);
+
+            // Badge guncelle
+            if (result.data.pending_count > 0) {
+                elements.pendingPackagesBadge.textContent = result.data.pending_count;
+                elements.pendingPackagesBadge.classList.remove('hidden');
+            } else {
+                elements.pendingPackagesBadge.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+/**
+ * Paket siparislerini render et
+ */
+function renderPackages(packages) {
+    if (!elements.packagesGrid) return;
+
+    if (packages.length === 0) {
+        elements.packagesGrid.innerHTML = '<p class="empty-message">Siparis bulunamadi</p>';
+        return;
+    }
+
+    const statusLabels = {
+        pending: 'Bekliyor',
+        preparing: 'Hazirlaniyor',
+        ready: 'Hazir',
+        completed: 'Tamamlandi',
+        cancelled: 'Iptal'
+    };
+
+    let html = '';
+    packages.forEach(pkg => {
+        const date = new Date(pkg.created_at).toLocaleString('tr-TR');
+        const itemCount = pkg.item_count || '-';
+
+        let actionsHtml = '';
+        if (pkg.status === 'pending') {
+            actionsHtml = `
+                <button class="btn-prepare" onclick="updatePackageStatus(${pkg.id}, 'preparing')">Hazirla</button>
+                <button class="btn-cancel" onclick="updatePackageStatus(${pkg.id}, 'cancelled')">Iptal</button>
+            `;
+        } else if (pkg.status === 'preparing') {
+            actionsHtml = `
+                <button class="btn-ready" onclick="updatePackageStatus(${pkg.id}, 'ready')">Hazir</button>
+                <button class="btn-cancel" onclick="updatePackageStatus(${pkg.id}, 'cancelled')">Iptal</button>
+            `;
+        } else if (pkg.status === 'ready') {
+            actionsHtml = `
+                <button class="btn-complete" onclick="updatePackageStatus(${pkg.id}, 'completed')">Tamamla</button>
+                <button class="btn-cancel" onclick="updatePackageStatus(${pkg.id}, 'cancelled')">Iptal</button>
+            `;
+        }
+
+        html += `
+            <div class="package-card status-${pkg.status}">
+                <div class="package-card-header">
+                    <span class="package-order-no">${escapeHtml(pkg.order_no)}</span>
+                    <span class="package-status ${pkg.status}">${statusLabels[pkg.status]}</span>
+                </div>
+                <div class="package-customer">
+                    <div class="name">${escapeHtml(pkg.customer_name)}</div>
+                    <div class="phone">${escapeHtml(pkg.customer_phone)}</div>
+                    <div class="address">${escapeHtml(pkg.customer_address)}</div>
+                </div>
+                <div class="package-summary">
+                    <span class="package-items-count">${itemCount} urun</span>
+                    <span class="package-total">${parseFloat(pkg.total_amount).toFixed(2)} TL</span>
+                </div>
+                <div class="package-time">${date}</div>
+                <div class="package-card-actions">
+                    <button class="btn-detail" onclick="showPackageDetail(${pkg.id})">Detay</button>
+                    ${actionsHtml}
+                </div>
+            </div>
+        `;
+    });
+
+    elements.packagesGrid.innerHTML = html;
+}
+
+/**
+ * Paket detayi goster
+ */
+async function showPackageDetail(id) {
+    try {
+        const result = await apiRequest(`${API.orders}?id=${id}`);
+
+        if (!result.success) {
+            showNotification(result.error || 'Detay yuklenemedi', 'error');
+            return;
+        }
+
+        const pkg = result.data;
+        const date = new Date(pkg.created_at).toLocaleString('tr-TR');
+        const statusLabels = {
+            pending: 'Bekliyor',
+            preparing: 'Hazirlaniyor',
+            ready: 'Hazir',
+            completed: 'Tamamlandi',
+            cancelled: 'Iptal'
+        };
+
+        let html = `
+            <div class="package-detail-section">
+                <h3>Siparis Bilgileri</h3>
+                <div class="package-detail-info">
+                    <p><strong>Siparis No:</strong> ${escapeHtml(pkg.order_no)}</p>
+                    <p><strong>Durum:</strong> <span class="package-status ${pkg.status}">${statusLabels[pkg.status]}</span></p>
+                    <p><strong>Tarih:</strong> ${date}</p>
+                    <p><strong>Toplam:</strong> ${parseFloat(pkg.total_amount).toFixed(2)} TL</p>
+                </div>
+            </div>
+            <div class="package-detail-section">
+                <h3>Musteri Bilgileri</h3>
+                <div class="package-detail-info">
+                    <p><strong>Ad Soyad:</strong> ${escapeHtml(pkg.customer_name)}</p>
+                    <p><strong>Telefon:</strong> ${escapeHtml(pkg.customer_phone)}</p>
+                </div>
+                <p style="margin-top:10px;"><strong>Adres:</strong><br>${escapeHtml(pkg.customer_address)}</p>
+                ${pkg.customer_note ? `<p style="margin-top:10px;"><strong>Not:</strong> ${escapeHtml(pkg.customer_note)}</p>` : ''}
+            </div>
+            <div class="package-detail-section">
+                <h3>Siparis Kalemleri</h3>
+                <table class="package-items-table">
+                    <thead>
+                        <tr>
+                            <th>Urun</th>
+                            <th>Adet</th>
+                            <th>Birim Fiyat</th>
+                            <th>Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        pkg.items.forEach(item => {
+            html += `
+                <tr>
+                    <td>${escapeHtml(item.product_name)}</td>
+                    <td>${item.quantity}</td>
+                    <td>${parseFloat(item.unit_price).toFixed(2)} TL</td>
+                    <td>${parseFloat(item.total_price).toFixed(2)} TL</td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table></div>';
+
+        elements.packageDetails.innerHTML = html;
+
+        // Aksiyonlar
+        let actionsHtml = '';
+        if (pkg.status === 'pending') {
+            actionsHtml = `
+                <button class="btn-prepare" onclick="updatePackageStatus(${pkg.id}, 'preparing'); closeModal('packageModal');">Hazirlamaya Basla</button>
+                <button class="btn-cancel" onclick="updatePackageStatus(${pkg.id}, 'cancelled'); closeModal('packageModal');">Iptal Et</button>
+            `;
+        } else if (pkg.status === 'preparing') {
+            actionsHtml = `
+                <button class="btn-ready" onclick="updatePackageStatus(${pkg.id}, 'ready'); closeModal('packageModal');">Hazir Olarak Isaretle</button>
+                <button class="btn-cancel" onclick="updatePackageStatus(${pkg.id}, 'cancelled'); closeModal('packageModal');">Iptal Et</button>
+            `;
+        } else if (pkg.status === 'ready') {
+            actionsHtml = `
+                <button class="btn-complete" onclick="updatePackageStatus(${pkg.id}, 'completed'); closeModal('packageModal');">Tamamla ve Satisa Ekle</button>
+                <button class="btn-cancel" onclick="updatePackageStatus(${pkg.id}, 'cancelled'); closeModal('packageModal');">Iptal Et</button>
+            `;
+        }
+
+        elements.packageActions.innerHTML = actionsHtml;
+        elements.packageModal.classList.remove('hidden');
+
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+/**
+ * Paket durumunu guncelle
+ */
+async function updatePackageStatus(id, status) {
+    try {
+        const result = await apiRequest(API.orders, 'PUT', { id, status });
+
+        if (result.success) {
+            if (status === 'completed') {
+                showNotification('Siparis tamamlandi ve satisa eklendi!');
+            } else if (status === 'cancelled') {
+                showNotification('Siparis iptal edildi');
+            } else {
+                showNotification('Siparis durumu guncellendi');
+            }
+            loadPackages();
+            loadPendingPackagesCount();
+
+            // Satis gecmisini de guncelle
+            if (status === 'completed') {
+                loadSalesHistory();
+            }
+        } else {
+            showNotification(result.error || 'Islem basarisiz', 'error');
+        }
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
 // Global fonksiyonlar (onclick icin)
 window.updateQuantity = updateQuantity;
 window.removeFromCart = removeFromCart;
 window.deleteProduct = deleteProduct;
 window.showSaleDetail = showSaleDetail;
+window.openEditProduct = openEditProduct;
+window.openEditUser = openEditUser;
+window.deleteUser = deleteUser;
+window.showPackageDetail = showPackageDetail;
+window.updatePackageStatus = updatePackageStatus;
+window.closeModal = closeModal;

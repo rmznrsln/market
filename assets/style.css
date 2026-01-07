@@ -952,3 +952,475 @@ tr:hover {
         font-size: 0.9rem;
     }
 }
+
+/* ===== KULLANICI YONETIMI ===== */
+.users-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+.user-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.user-form h2 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.users-list h2 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.form-group select {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.3s;
+}
+
+.form-group select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+/* ===== EDIT BUTTON ===== */
+.edit-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    background: #f39c12;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #d68910;
+}
+
+/* Action Buttons Group */
+.action-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ===== STATUS BADGES ===== */
+.status-active {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    padding: 12px 24px;
+    background: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.cancel-btn:hover {
+    background: #7f8c8d;
+}
+
+/* ===== RESPONSIVE - KULLANICI YONETIMI ===== */
+@media (max-width: 768px) {
+    .action-btns {
+        flex-direction: column;
+    }
+
+    .action-btns button {
+        width: 100%;
+    }
+}
+
+/* ===== PAKET SIPARISLER ===== */
+.packages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.packages-header h2 {
+    color: #2c3e50;
+    margin: 0;
+}
+
+.packages-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.packages-filters select {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: white;
+}
+
+.packages-filters select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.refresh-btn {
+    padding: 10px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.refresh-btn:hover {
+    background: #2980b9;
+}
+
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.package-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.package-card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.package-card.status-pending {
+    border-left: 4px solid #f39c12;
+}
+
+.package-card.status-preparing {
+    border-left: 4px solid #3498db;
+}
+
+.package-card.status-ready {
+    border-left: 4px solid #27ae60;
+}
+
+.package-card.status-completed {
+    border-left: 4px solid #95a5a6;
+    opacity: 0.7;
+}
+
+.package-card.status-cancelled {
+    border-left: 4px solid #e74c3c;
+    opacity: 0.5;
+}
+
+.package-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.package-order-no {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.package-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.package-status.pending {
+    background: #fef3cd;
+    color: #856404;
+}
+
+.package-status.preparing {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.package-status.ready {
+    background: #d4edda;
+    color: #155724;
+}
+
+.package-status.completed {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.package-status.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.package-customer {
+    margin-bottom: 15px;
+}
+
+.package-customer .name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+.package-customer .phone {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.package-customer .address {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.package-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.package-items-count {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.package-total {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.package-time {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 10px;
+}
+
+.package-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.package-card-actions button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-prepare {
+    background: #3498db;
+    color: white;
+}
+
+.btn-prepare:hover {
+    background: #2980b9;
+}
+
+.btn-ready {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-ready:hover {
+    background: #d68910;
+}
+
+.btn-complete {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-complete:hover {
+    background: #219a52;
+}
+
+.btn-cancel {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #c0392b;
+}
+
+.btn-detail {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-detail:hover {
+    background: #7f8c8d;
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* Modal Large */
+.modal-lg {
+    max-width: 700px;
+}
+
+/* Package Details in Modal */
+.package-detail-section {
+    margin-bottom: 20px;
+}
+
+.package-detail-section h3 {
+    color: #2c3e50;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #3498db;
+}
+
+.package-detail-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.package-detail-info p {
+    margin: 0;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.package-detail-info p strong {
+    color: #2c3e50;
+}
+
+.package-items-table {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.package-items-table th {
+    background: #f8f9fa;
+    color: #2c3e50;
+}
+
+.package-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.package-actions button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .packages-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .packages-filters {
+        width: 100%;
+    }
+
+    .packages-filters select {
+        flex: 1;
+    }
+
+    .packages-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .package-detail-info {
+        grid-template-columns: 1fr;
+    }
+
+    .package-actions {
+        flex-direction: column;
+    }
+
+    .package-actions button {
+        width: 100%;
+    }
+}
