@@ -25,6 +25,7 @@ const state = {
         sales: 1
     },
     barcodeScanner: null,
+    torchOn: false,
     allProducts: [] // Tum urunler (urun listesi icin)
 };
 
@@ -1456,20 +1457,49 @@ async function startBarcodeScanner() {
 
     state.barcodeScanner = new Html5Qrcode("scannerVideo");
 
+    // Ekran genisligine gore tarama alani
+    const screenWidth = window.innerWidth;
+    const scanWidth = Math.min(screenWidth - 40, 350);
+    const scanHeight = Math.min(150, scanWidth * 0.4);
+
     const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 150 },
-        videoConstraints: {
-            facingMode: "environment"
+        fps: 15, // Daha yuksek FPS
+        qrbox: { width: scanWidth, height: scanHeight },
+        aspectRatio: 1.777778, // 16:9
+        formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.CODE_93,
+            Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true // Native API kullan (daha hizli)
         }
+    };
+
+    // Yuksek cozunurluk video ayarlari
+    const videoConstraints = {
+        facingMode: "environment",
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 },
+        focusMode: "continuous", // Surekli odaklama
+        exposureMode: "continuous"
     };
 
     try {
         await state.barcodeScanner.start(
-            { facingMode: "environment" },
+            videoConstraints,
             config,
             (decodedText) => {
-                // Barkod okundu
+                // Barkod okundu - titresim ve ses geri bildirimi
+                if (navigator.vibrate) {
+                    navigator.vibrate(100);
+                }
+                playBeepSound();
                 elements.barcodeInput.value = decodedText;
                 stopBarcodeScanner();
                 addToCart();
@@ -1478,25 +1508,109 @@ async function startBarcodeScanner() {
                 // Tarama hatasi - sessizce yoksay
             }
         );
+
+        // Fener butonunu goster
+        showTorchButton();
+
     } catch (err) {
         console.error('Kamera baslatma hatasi:', err);
 
-        // iOS için alternatif: ön kamera dene
+        // Basit ayarlarla tekrar dene
         try {
             await state.barcodeScanner.start(
-                { facingMode: "user" },
-                config,
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 280, height: 120 } },
                 (decodedText) => {
+                    if (navigator.vibrate) navigator.vibrate(100);
+                    playBeepSound();
                     elements.barcodeInput.value = decodedText;
                     stopBarcodeScanner();
                     addToCart();
                 },
                 (errorMessage) => {}
             );
+            showTorchButton();
         } catch (err2) {
-            showNotification('Kamera acilamadi. Safari Ayarlar > Kamera izni verin.', 'error');
-            elements.barcodeScanner.classList.add('hidden');
+            // iOS için ön kamera dene
+            try {
+                await state.barcodeScanner.start(
+                    { facingMode: "user" },
+                    { fps: 10, qrbox: { width: 250, height: 100 } },
+                    (decodedText) => {
+                        if (navigator.vibrate) navigator.vibrate(100);
+                        playBeepSound();
+                        elements.barcodeInput.value = decodedText;
+                        stopBarcodeScanner();
+                        addToCart();
+                    },
+                    (errorMessage) => {}
+                );
+            } catch (err3) {
+                showNotification('Kamera acilamadi. Ayarlardan kamera izni verin.', 'error');
+                elements.barcodeScanner.classList.add('hidden');
+            }
         }
+    }
+}
+
+/**
+ * Fener butonunu goster
+ */
+function showTorchButton() {
+    const torchBtn = document.getElementById('torchBtn');
+    if (torchBtn) {
+        torchBtn.classList.remove('hidden');
+    }
+}
+
+/**
+ * Feneri ac/kapat
+ */
+async function toggleTorch() {
+    if (!state.barcodeScanner) return;
+
+    try {
+        const track = state.barcodeScanner.getRunningTrackSettings();
+        if (track && track.torch !== undefined) {
+            const capabilities = await state.barcodeScanner.getRunningTrackCapabilities();
+            if (capabilities.torch) {
+                state.torchOn = !state.torchOn;
+                await state.barcodeScanner.applyVideoConstraints({
+                    advanced: [{ torch: state.torchOn }]
+                });
+
+                const torchBtn = document.getElementById('torchBtn');
+                if (torchBtn) {
+                    torchBtn.classList.toggle('active', state.torchOn);
+                    torchBtn.innerHTML = state.torchOn ? '&#128294;' : '&#128294;';
+                }
+            }
+        }
+    } catch (err) {
+        console.log('Fener desteklenmiyor:', err);
+    }
+}
+
+/**
+ * Bip sesi cal
+ */
+function playBeepSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 1800;
+        oscillator.type = 'sine';
+        gainNode.gain.value = 0.3;
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (err) {
+        // Ses calma desteklenmiyorsa sessizce devam et
     }
 }
 
@@ -1504,6 +1618,8 @@ async function startBarcodeScanner() {
  * Kamera taramayi durdur
  */
 function stopBarcodeScanner() {
+    state.torchOn = false;
+
     if (state.barcodeScanner) {
         state.barcodeScanner.stop().then(() => {
             state.barcodeScanner.clear();
@@ -1515,6 +1631,13 @@ function stopBarcodeScanner() {
 
     if (elements.barcodeScanner) {
         elements.barcodeScanner.classList.add('hidden');
+    }
+
+    // Fener butonunu gizle
+    const torchBtn = document.getElementById('torchBtn');
+    if (torchBtn) {
+        torchBtn.classList.add('hidden');
+        torchBtn.classList.remove('active');
     }
 }
 
@@ -1616,7 +1739,7 @@ async function loadShortcutProducts() {
     if (!elements.shortcutItems) return;
 
     if (state.favorites.length === 0) {
-        elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Favori urun yok</p>';
+        elements.shortcutItems.innerHTML = '<span class="empty-shortcuts">Favori urun yok</span>';
         return;
     }
 
@@ -1627,11 +1750,11 @@ async function loadShortcutProducts() {
         if (result.success && result.data.items) {
             renderShortcuts(result.data.items);
         } else {
-            elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Favori urun yok</p>';
+            elements.shortcutItems.innerHTML = '<span class="empty-shortcuts">Favori urun yok</span>';
         }
     } catch (error) {
         console.log('Kisayol urunleri yuklenemedi:', error);
-        elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Yuklenemedi</p>';
+        elements.shortcutItems.innerHTML = '<span class="empty-shortcuts">Yuklenemedi</span>';
     }
 }
 
@@ -1642,7 +1765,7 @@ function renderShortcuts(products) {
     if (!elements.shortcutItems) return;
 
     if (products.length === 0) {
-        elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Favori urun yok</p>';
+        elements.shortcutItems.innerHTML = '<span class="empty-shortcuts">Favori urun yok</span>';
         return;
     }
 
@@ -1772,6 +1895,7 @@ window.updatePackageStatus = updatePackageStatus;
 window.closeModal = closeModal;
 window.startBarcodeScanner = startBarcodeScanner;
 window.stopBarcodeScanner = stopBarcodeScanner;
+window.toggleTorch = toggleTorch;
 window.toggleFavorite = toggleFavorite;
 window.addShortcutToCart = addShortcutToCart;
 window.selectProductFromList = selectProductFromList;

@@ -330,33 +330,136 @@ nav {
 .barcode-scanner {
     margin-top: 15px;
     position: relative;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
     background: #000;
 }
 
 .barcode-scanner #scannerVideo {
     width: 100%;
-    max-height: 300px;
+    min-height: 280px;
+    max-height: 350px;
+    object-fit: cover;
 }
 
-.close-scanner-btn {
+.scanner-controls {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 35px;
-    height: 35px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.close-scanner-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-scanner-btn:hover {
     background: #e74c3c;
+    transform: scale(1.1);
+}
+
+.torch-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(52, 152, 219, 0.9);
     color: white;
     border: none;
     border-radius: 50%;
     font-size: 1.2rem;
     cursor: pointer;
-    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
-.close-scanner-btn:hover {
-    background: #c0392b;
+.torch-btn:hover {
+    background: #3498db;
+    transform: scale(1.1);
+}
+
+.torch-btn.active {
+    background: #f1c40f;
+    color: #2c3e50;
+}
+
+/* Tarama rehberi */
+.scanner-guide {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 320px;
+    height: 100px;
+    border: 3px solid rgba(46, 204, 113, 0.8);
+    border-radius: 8px;
+    pointer-events: none;
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.4);
+}
+
+.scanner-guide::before,
+.scanner-guide::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: #2ecc71;
+    border-style: solid;
+}
+
+.scanner-guide::before {
+    top: -3px;
+    left: -3px;
+    border-width: 4px 0 0 4px;
+    border-radius: 8px 0 0 0;
+}
+
+.scanner-guide::after {
+    top: -3px;
+    right: -3px;
+    border-width: 4px 4px 0 0;
+    border-radius: 0 8px 0 0;
+}
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 5%;
+    width: 90%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #2ecc71, transparent);
+    animation: scanLine 2s ease-in-out infinite;
+}
+
+@keyframes scanLine {
+    0%, 100% { top: 10%; opacity: 0.5; }
+    50% { top: 85%; opacity: 1; }
+}
+
+.scanner-hint {
+    position: absolute;
+    bottom: 15px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    font-size: 0.85rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    z-index: 5;
 }
 
 .product-info {
@@ -1513,63 +1616,68 @@ tr:hover {
     margin-right: 10px;
 }
 
-/* ===== KISAYOL URUNLER ===== */
-.shortcut-products {
-    background: #f9f9f9;
-    padding: 15px;
+/* ===== KISAYOL URUNLER BAR ===== */
+.shortcut-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #2c3e50;
+    padding: 10px 15px;
     border-radius: 8px;
     margin-top: 20px;
+    overflow-x: auto;
 }
 
-.shortcut-products h3 {
-    color: #2c3e50;
-    font-size: 1rem;
-    margin-bottom: 10px;
+.shortcut-bar-label {
+    color: #ecf0f1;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .shortcut-items {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 0;
 }
 
 .shortcut-item {
     background: #3498db;
     color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    min-width: 80px;
-    text-align: center;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .shortcut-item:hover {
     background: #2980b9;
-    transform: translateY(-2px);
+    transform: scale(1.02);
 }
 
 .shortcut-item .shortcut-name {
     font-size: 0.85rem;
     font-weight: 500;
-    margin-bottom: 3px;
-    max-width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .shortcut-item .shortcut-price {
     font-size: 0.75rem;
-    opacity: 0.9;
+    opacity: 0.85;
+    background: rgba(0,0,0,0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .empty-shortcuts {
-    color: #999;
-    font-size: 0.9rem;
+    color: #95a5a6;
+    font-size: 0.85rem;
     font-style: italic;
 }
 
@@ -1709,7 +1817,17 @@ tr:hover {
         justify-content: center;
     }
 
+    .shortcut-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .shortcut-bar-label {
+        font-size: 0.8rem;
+    }
+
     .shortcut-items {
-        justify-content: center;
+        width: 100%;
     }
 }

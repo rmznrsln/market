@@ -109,7 +109,14 @@
                     </div>
                     <div id="barcodeScanner" class="barcode-scanner hidden">
                         <div id="scannerVideo"></div>
-                        <button id="closeScannerBtn" class="close-scanner-btn">&times;</button>
+                        <div class="scanner-controls">
+                            <button id="torchBtn" class="torch-btn hidden" onclick="toggleTorch()" title="Fener">&#128294;</button>
+                            <button id="closeScannerBtn" class="close-scanner-btn" title="Kapat">&times;</button>
+                        </div>
+                        <div class="scanner-guide">
+                            <div class="scan-line"></div>
+                        </div>
+                        <p class="scanner-hint">Barkodu cerceve icine hizalayin</p>
                     </div>
                     <div id="productInfo" class="product-info hidden">
                         <span id="foundProductName"></span>
@@ -122,14 +129,6 @@
                             <button id="closeProductListBtn">&times;</button>
                         </div>
                         <div class="product-list-items" id="productListItems"></div>
-                    </div>
-                </div>
-
-                <!-- Kisayol Urunler -->
-                <div class="shortcut-products">
-                    <h3>Kisayol Urunler</h3>
-                    <div class="shortcut-items" id="shortcutItems">
-                        <p class="empty-shortcuts">Favori urun yok</p>
                     </div>
                 </div>
 
@@ -153,6 +152,14 @@
                         </label>
                     </div>
                     <button id="completeSaleBtn" class="complete-btn" disabled>Satisi Tamamla (F4)</button>
+                </div>
+            </div>
+
+            <!-- Kisayol Urunler Bar -->
+            <div class="shortcut-bar">
+                <span class="shortcut-bar-label">Kisayollar:</span>
+                <div class="shortcut-items" id="shortcutItems">
+                    <span class="empty-shortcuts">Favori urun yok</span>
                 </div>
             </div>
         </section>
