@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Satis Sistemi</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Market">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="assets/icons/icon.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon.png?v=2">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon.png?v=2">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/icons/icon.png?v=2">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/icons/icon.png?v=2">
+    <link rel="shortcut icon" href="assets/icons/icon.png?v=2">
+
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -43,6 +63,20 @@
                     <button id="logoutBtn" class="logout-btn">Cikis</button>
                 </div>
             </div>
+            <!-- Hava Durumu ve Kurlar Widget -->
+            <div class="info-widget">
+                <div class="widget-item weather-widget">
+                    <span id="weatherIcon">&#9728;</span>
+                    <span id="weatherTemp">--°C</span>
+                    <span id="weatherCity">Yukleniyor...</span>
+                </div>
+                <div class="widget-item currency-widget">
+                    <span class="currency-label">USD:</span>
+                    <span id="usdRate">--</span>
+                    <span class="currency-label">EUR:</span>
+                    <span id="eurRate">--</span>
+                </div>
+            </div>
             <div class="header-stats">
                 <div class="stat-item">
                     <span class="stat-label">Bugun</span>
@@ -70,11 +104,32 @@
                     <h2>Barkod Okut</h2>
                     <div class="input-group">
                         <input type="text" id="barcodeInput" placeholder="Barkod okutun veya girin...">
+                        <button id="cameraScanBtn" class="camera-btn" title="Kamera ile Okut">&#128247;</button>
                         <button id="addToCartBtn">Ekle</button>
+                    </div>
+                    <div id="barcodeScanner" class="barcode-scanner hidden">
+                        <div id="scannerVideo"></div>
+                        <button id="closeScannerBtn" class="close-scanner-btn">&times;</button>
                     </div>
                     <div id="productInfo" class="product-info hidden">
                         <span id="foundProductName"></span>
                         <span id="foundProductPrice"></span>
+                    </div>
+                    <!-- Urun Listesi Modal -->
+                    <div id="productListModal" class="product-list-modal hidden">
+                        <div class="product-list-header">
+                            <input type="text" id="productSearchInput" placeholder="Urun ara...">
+                            <button id="closeProductListBtn">&times;</button>
+                        </div>
+                        <div class="product-list-items" id="productListItems"></div>
+                    </div>
+                </div>
+
+                <!-- Kisayol Urunler -->
+                <div class="shortcut-products">
+                    <h3>Kisayol Urunler</h3>
+                    <div class="shortcut-items" id="shortcutItems">
+                        <p class="empty-shortcuts">Favori urun yok</p>
                     </div>
                 </div>
 
@@ -97,7 +152,7 @@
                             <span>Kart</span>
                         </label>
                     </div>
-                    <button id="completeSaleBtn" class="complete-btn" disabled>Satisi Tamamla</button>
+                    <button id="completeSaleBtn" class="complete-btn" disabled>Satisi Tamamla (F4)</button>
                 </div>
             </div>
         </section>
@@ -172,6 +227,7 @@
                     <table id="productsTable">
                         <thead>
                             <tr>
+                                <th>Fav</th>
                                 <th>Barkod</th>
                                 <th>Urun Adi</th>
                                 <th>Fiyat</th>
@@ -352,6 +408,18 @@
         <div class="loading-spinner"></div>
     </div>
 
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="assets/app.js"></script>
+
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((reg) => console.log('Service Worker kayitli'))
+                    .catch((err) => console.log('Service Worker hatasi:', err));
+            });
+        }
+    </script>
 </body>
 </html>

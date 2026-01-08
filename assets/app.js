@@ -19,10 +19,13 @@ const state = {
     products: [],
     users: [],
     packages: [],
+    favorites: JSON.parse(localStorage.getItem('favorite_products') || '[]'),
     currentPage: {
         products: 1,
         sales: 1
-    }
+    },
+    barcodeScanner: null,
+    allProducts: [] // Tum urunler (urun listesi icin)
 };
 
 // DOM Elemanlari
@@ -63,6 +66,9 @@ function initializeElements() {
     elements.barcodeInput = document.getElementById('barcodeInput');
     elements.addToCartBtn = document.getElementById('addToCartBtn');
     elements.productInfo = document.getElementById('productInfo');
+    elements.cameraScanBtn = document.getElementById('cameraScanBtn');
+    elements.barcodeScanner = document.getElementById('barcodeScanner');
+    elements.closeScannerBtn = document.getElementById('closeScannerBtn');
     elements.foundProductName = document.getElementById('foundProductName');
     elements.foundProductPrice = document.getElementById('foundProductPrice');
     elements.cartItems = document.getElementById('cartItems');
@@ -124,6 +130,22 @@ function initializeElements() {
     elements.packageDetails = document.getElementById('packageDetails');
     elements.packageActions = document.getElementById('packageActions');
 
+    // Widget'lar
+    elements.weatherIcon = document.getElementById('weatherIcon');
+    elements.weatherTemp = document.getElementById('weatherTemp');
+    elements.weatherCity = document.getElementById('weatherCity');
+    elements.usdRate = document.getElementById('usdRate');
+    elements.eurRate = document.getElementById('eurRate');
+
+    // Kisayol Urunler
+    elements.shortcutItems = document.getElementById('shortcutItems');
+
+    // Urun Listesi Modal
+    elements.productListModal = document.getElementById('productListModal');
+    elements.productSearchInput = document.getElementById('productSearchInput');
+    elements.productListItems = document.getElementById('productListItems');
+    elements.closeProductListBtn = document.getElementById('closeProductListBtn');
+
     // Diger
     elements.notification = document.getElementById('notification');
     elements.loadingOverlay = document.getElementById('loadingOverlay');
@@ -151,6 +173,14 @@ function initializeEventListeners() {
         }
     });
     elements.completeSaleBtn.addEventListener('click', completeSale);
+
+    // Kamera ile barkod okuma
+    if (elements.cameraScanBtn) {
+        elements.cameraScanBtn.addEventListener('click', startBarcodeScanner);
+    }
+    if (elements.closeScannerBtn) {
+        elements.closeScannerBtn.addEventListener('click', stopBarcodeScanner);
+    }
 
     // Urun
     elements.productForm.addEventListener('submit', addProduct);
@@ -215,6 +245,35 @@ function initializeEventListeners() {
     if (elements.refreshPackagesBtn) {
         elements.refreshPackagesBtn.addEventListener('click', loadPackages);
     }
+
+    // Barkod alanina cift tikla - urun listesi ac
+    if (elements.barcodeInput) {
+        elements.barcodeInput.addEventListener('dblclick', openProductListModal);
+    }
+
+    // Urun listesi modal
+    if (elements.closeProductListBtn) {
+        elements.closeProductListBtn.addEventListener('click', closeProductListModal);
+    }
+    if (elements.productSearchInput) {
+        let searchTimeout;
+        elements.productSearchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterProductList(elements.productSearchInput.value);
+            }, 200);
+        });
+    }
+
+    // F4 kisayolu - satis tamamla
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F4') {
+            e.preventDefault();
+            if (!elements.completeSaleBtn.disabled) {
+                completeSale();
+            }
+        }
+    });
 }
 
 /**
@@ -345,6 +404,16 @@ function showMainApp() {
     // Verileri yukle
     loadSalesHistory();
     loadPendingPackagesCount();
+
+    // Widget'lari yukle
+    loadWeather();
+    loadCurrencyRates();
+
+    // Kisayol urunleri yukle
+    loadShortcutProducts();
+
+    // Tum urunleri yukle (urun listesi icin)
+    loadAllProducts();
 }
 
 /**
@@ -611,14 +680,17 @@ function renderProducts(products) {
     state.products = products; // Urunleri sakla
 
     if (products.length === 0) {
-        elements.productsBody.innerHTML = '<tr><td colspan="5" class="empty-message">Urun bulunamadi</td></tr>';
+        elements.productsBody.innerHTML = '<tr><td colspan="6" class="empty-message">Urun bulunamadi</td></tr>';
         return;
     }
 
     let html = '';
     products.forEach(product => {
+        const isFav = state.favorites.includes(product.id);
+        const favClass = isFav ? 'active' : '';
         html += `
             <tr>
+                <td><button class="fav-btn ${favClass}" onclick="toggleFavorite(${product.id})">&#9733;</button></td>
                 <td>${escapeHtml(product.barcode)}</td>
                 <td>${escapeHtml(product.name)}</td>
                 <td>${parseFloat(product.price).toFixed(2)} TL</td>
@@ -1106,6 +1178,8 @@ function escapeHtml(text) {
  * Bekleyen paket sayisini yukle
  */
 async function loadPendingPackagesCount() {
+    if (!elements.pendingPackagesBadge) return;
+
     try {
         const result = await apiRequest(`${API.orders}?active=1&limit=1`);
         if (result.success && result.data.pending_count > 0) {
@@ -1116,6 +1190,7 @@ async function loadPendingPackagesCount() {
         }
     } catch (error) {
         // Sessizce hata yoksay
+        console.log('Paket sayisi yuklenemedi:', error);
     }
 }
 
@@ -1123,6 +1198,8 @@ async function loadPendingPackagesCount() {
  * Paket siparisleri yukle
  */
 async function loadPackages() {
+    if (!elements.packageStatusFilter || !elements.packagesGrid) return;
+
     const status = elements.packageStatusFilter.value;
     let url = API.orders;
 
@@ -1140,11 +1217,13 @@ async function loadPackages() {
             renderPackages(result.data.items);
 
             // Badge guncelle
-            if (result.data.pending_count > 0) {
-                elements.pendingPackagesBadge.textContent = result.data.pending_count;
-                elements.pendingPackagesBadge.classList.remove('hidden');
-            } else {
-                elements.pendingPackagesBadge.classList.add('hidden');
+            if (elements.pendingPackagesBadge) {
+                if (result.data.pending_count > 0) {
+                    elements.pendingPackagesBadge.textContent = result.data.pending_count;
+                    elements.pendingPackagesBadge.classList.remove('hidden');
+                } else {
+                    elements.pendingPackagesBadge.classList.add('hidden');
+                }
             }
         }
     } catch (error) {
@@ -1348,6 +1427,338 @@ async function updatePackageStatus(id, status) {
     }
 }
 
+/**
+ * Kamera ile barkod taramayi baslat
+ */
+async function startBarcodeScanner() {
+    if (!elements.barcodeScanner) return;
+
+    // Html5Qrcode kontrolü
+    if (typeof Html5Qrcode === 'undefined') {
+        showNotification('Kamera destegi yuklenemedi', 'error');
+        return;
+    }
+
+    // Önce kamera izni iste
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+        // İzin alındı, stream'i kapat
+        stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+        console.error('Kamera izni hatasi:', err);
+        showNotification('Kamera izni verilmedi. Ayarlardan izin verin.', 'error');
+        return;
+    }
+
+    elements.barcodeScanner.classList.remove('hidden');
+
+    state.barcodeScanner = new Html5Qrcode("scannerVideo");
+
+    const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 150 },
+        videoConstraints: {
+            facingMode: "environment"
+        }
+    };
+
+    try {
+        await state.barcodeScanner.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+                // Barkod okundu
+                elements.barcodeInput.value = decodedText;
+                stopBarcodeScanner();
+                addToCart();
+            },
+            (errorMessage) => {
+                // Tarama hatasi - sessizce yoksay
+            }
+        );
+    } catch (err) {
+        console.error('Kamera baslatma hatasi:', err);
+
+        // iOS için alternatif: ön kamera dene
+        try {
+            await state.barcodeScanner.start(
+                { facingMode: "user" },
+                config,
+                (decodedText) => {
+                    elements.barcodeInput.value = decodedText;
+                    stopBarcodeScanner();
+                    addToCart();
+                },
+                (errorMessage) => {}
+            );
+        } catch (err2) {
+            showNotification('Kamera acilamadi. Safari Ayarlar > Kamera izni verin.', 'error');
+            elements.barcodeScanner.classList.add('hidden');
+        }
+    }
+}
+
+/**
+ * Kamera taramayi durdur
+ */
+function stopBarcodeScanner() {
+    if (state.barcodeScanner) {
+        state.barcodeScanner.stop().then(() => {
+            state.barcodeScanner.clear();
+            state.barcodeScanner = null;
+        }).catch((err) => {
+            console.error('Kamera durdurma hatasi:', err);
+        });
+    }
+
+    if (elements.barcodeScanner) {
+        elements.barcodeScanner.classList.add('hidden');
+    }
+}
+
+/**
+ * Hava durumunu yukle
+ */
+async function loadWeather() {
+    if (!elements.weatherTemp) return;
+
+    try {
+        // IP bazli konum tespiti
+        const geoResponse = await fetch('https://ipapi.co/json/');
+        const geoData = await geoResponse.json();
+        const city = geoData.city || 'Istanbul';
+        const lat = geoData.latitude || 41.0082;
+        const lon = geoData.longitude || 28.9784;
+
+        // Open-Meteo API (ucretsiz, API key gerektirmez)
+        const weatherResponse = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+        );
+        const weatherData = await weatherResponse.json();
+
+        if (weatherData.current_weather) {
+            const temp = Math.round(weatherData.current_weather.temperature);
+            const weatherCode = weatherData.current_weather.weathercode;
+
+            // Hava durumu ikonlari
+            let icon = '&#9728;'; // Gunesli
+            if (weatherCode >= 61 && weatherCode <= 67) icon = '&#127783;'; // Yagmurlu
+            else if (weatherCode >= 71 && weatherCode <= 77) icon = '&#10052;'; // Karli
+            else if (weatherCode >= 1 && weatherCode <= 3) icon = '&#9729;'; // Parcali bulutlu
+            else if (weatherCode >= 45 && weatherCode <= 48) icon = '&#127787;'; // Sisli
+
+            elements.weatherIcon.innerHTML = icon;
+            elements.weatherTemp.textContent = `${temp}°C`;
+            elements.weatherCity.textContent = city;
+        }
+    } catch (error) {
+        console.log('Hava durumu yuklenemedi:', error);
+        elements.weatherCity.textContent = 'Yuklenmedi';
+    }
+}
+
+/**
+ * Doviz kurlarini yukle
+ */
+async function loadCurrencyRates() {
+    if (!elements.usdRate || !elements.eurRate) return;
+
+    try {
+        // Exchangerate API (ucretsiz)
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/TRY');
+        const data = await response.json();
+
+        if (data.rates) {
+            // TRY bazli oldugu icin ters ceviriyoruz
+            const usd = (1 / data.rates.USD).toFixed(2);
+            const eur = (1 / data.rates.EUR).toFixed(2);
+
+            elements.usdRate.textContent = `${usd} TL`;
+            elements.eurRate.textContent = `${eur} TL`;
+        }
+    } catch (error) {
+        console.log('Doviz kurlari yuklenemedi:', error);
+        elements.usdRate.textContent = '--';
+        elements.eurRate.textContent = '--';
+    }
+}
+
+/**
+ * Favori urun ekle/cikar
+ */
+function toggleFavorite(productId) {
+    const index = state.favorites.indexOf(productId);
+
+    if (index > -1) {
+        state.favorites.splice(index, 1);
+        showNotification('Urun kisayollardan cikarildi');
+    } else {
+        state.favorites.push(productId);
+        showNotification('Urun kisayollara eklendi');
+    }
+
+    // localStorage'a kaydet
+    localStorage.setItem('favorite_products', JSON.stringify(state.favorites));
+
+    // Tabloyu guncelle
+    loadProducts();
+
+    // Kisayollari guncelle
+    loadShortcutProducts();
+}
+
+/**
+ * Kisayol urunleri yukle
+ */
+async function loadShortcutProducts() {
+    if (!elements.shortcutItems) return;
+
+    if (state.favorites.length === 0) {
+        elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Favori urun yok</p>';
+        return;
+    }
+
+    try {
+        // Favori urunleri API'den cek
+        const result = await apiRequest(`${API.products}?ids=${state.favorites.join(',')}`);
+
+        if (result.success && result.data.items) {
+            renderShortcuts(result.data.items);
+        } else {
+            elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Favori urun yok</p>';
+        }
+    } catch (error) {
+        console.log('Kisayol urunleri yuklenemedi:', error);
+        elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Yuklenemedi</p>';
+    }
+}
+
+/**
+ * Kisayollari render et
+ */
+function renderShortcuts(products) {
+    if (!elements.shortcutItems) return;
+
+    if (products.length === 0) {
+        elements.shortcutItems.innerHTML = '<p class="empty-shortcuts">Favori urun yok</p>';
+        return;
+    }
+
+    let html = '';
+    products.forEach(product => {
+        html += `
+            <div class="shortcut-item" onclick="addShortcutToCart('${product.barcode}')">
+                <span class="shortcut-name">${escapeHtml(product.name)}</span>
+                <span class="shortcut-price">${parseFloat(product.price).toFixed(2)} TL</span>
+            </div>
+        `;
+    });
+
+    elements.shortcutItems.innerHTML = html;
+}
+
+/**
+ * Kisayol urununu sepete ekle
+ */
+async function addShortcutToCart(barcode) {
+    elements.barcodeInput.value = barcode;
+    await addToCart();
+}
+
+/**
+ * Tum urunleri yukle (urun listesi icin)
+ */
+async function loadAllProducts() {
+    try {
+        const result = await apiRequest(`${API.products}?limit=1000`);
+        if (result.success) {
+            state.allProducts = result.data.items;
+        }
+    } catch (error) {
+        console.log('Urunler yuklenemedi:', error);
+    }
+}
+
+/**
+ * Urun listesi modalini ac
+ */
+function openProductListModal() {
+    if (!elements.productListModal) return;
+
+    elements.productListModal.classList.remove('hidden');
+    elements.productSearchInput.value = '';
+    elements.productSearchInput.focus();
+
+    // Urunleri listele
+    renderProductList(state.allProducts);
+}
+
+/**
+ * Urun listesi modalini kapat
+ */
+function closeProductListModal() {
+    if (elements.productListModal) {
+        elements.productListModal.classList.add('hidden');
+    }
+    elements.barcodeInput.focus();
+}
+
+/**
+ * Urun listesini filtrele
+ */
+function filterProductList(search) {
+    if (!search) {
+        renderProductList(state.allProducts);
+        return;
+    }
+
+    const searchLower = search.toLowerCase();
+    const filtered = state.allProducts.filter(p =>
+        p.name.toLowerCase().includes(searchLower) ||
+        p.barcode.toLowerCase().includes(searchLower)
+    );
+
+    renderProductList(filtered);
+}
+
+/**
+ * Urun listesini render et
+ */
+function renderProductList(products) {
+    if (!elements.productListItems) return;
+
+    if (!products || products.length === 0) {
+        elements.productListItems.innerHTML = '<p class="product-list-empty">Urun bulunamadi</p>';
+        return;
+    }
+
+    let html = '';
+    products.slice(0, 50).forEach(product => {
+        html += `
+            <div class="product-list-item" onclick="selectProductFromList('${product.barcode}')">
+                <div class="product-info-text">
+                    <div class="name">${escapeHtml(product.name)}</div>
+                    <div class="barcode">${escapeHtml(product.barcode)}</div>
+                </div>
+                <div class="price">${parseFloat(product.price).toFixed(2)} TL</div>
+            </div>
+        `;
+    });
+
+    elements.productListItems.innerHTML = html;
+}
+
+/**
+ * Urun listesinden urun sec
+ */
+async function selectProductFromList(barcode) {
+    closeProductListModal();
+    elements.barcodeInput.value = barcode;
+    await addToCart();
+}
+
 // Global fonksiyonlar (onclick icin)
 window.updateQuantity = updateQuantity;
 window.removeFromCart = removeFromCart;
@@ -1359,3 +1770,8 @@ window.deleteUser = deleteUser;
 window.showPackageDetail = showPackageDetail;
 window.updatePackageStatus = updatePackageStatus;
 window.closeModal = closeModal;
+window.startBarcodeScanner = startBarcodeScanner;
+window.stopBarcodeScanner = stopBarcodeScanner;
+window.toggleFavorite = toggleFavorite;
+window.addShortcutToCart = addShortcutToCart;
+window.selectProductFromList = selectProductFromList;

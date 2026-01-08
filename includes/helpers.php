@@ -101,8 +101,8 @@ function getPaginationParams(): array {
     $page = getPositiveInt($_GET['page'] ?? 1, 1);
     $limit = getPositiveInt($_GET['limit'] ?? ITEMS_PER_PAGE, ITEMS_PER_PAGE);
 
-    // Limit sınırlaması
-    $limit = min($limit, 100);
+    // Limit sınırlaması (urun listesi icin 1000'e kadar izin ver)
+    $limit = min($limit, 1000);
 
     $offset = ($page - 1) * $limit;
 

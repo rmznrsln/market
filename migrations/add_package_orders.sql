@@ -1,7 +1,5 @@
 -- Paket Siparis Tablolari
--- Bu dosyayi phpMyAdmin veya MySQL komut satirindan calistirin
-
-USE market_db;
+-- phpMyAdmin'de veritabaninizi sectikten sonra bu dosyayi ice aktarin
 
 -- Paket siparisler tablosu
 CREATE TABLE IF NOT EXISTS package_orders (

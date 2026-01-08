@@ -315,6 +315,50 @@ nav {
     background: #2980b9;
 }
 
+/* Kamera Butonu */
+.camera-btn {
+    padding: 12px 15px !important;
+    background: #27ae60 !important;
+    font-size: 1.2rem !important;
+}
+
+.camera-btn:hover {
+    background: #219a52 !important;
+}
+
+/* Barkod Tarayıcı */
+.barcode-scanner {
+    margin-top: 15px;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+}
+
+.barcode-scanner #scannerVideo {
+    width: 100%;
+    max-height: 300px;
+}
+
+.close-scanner-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.close-scanner-btn:hover {
+    background: #c0392b;
+}
+
 .product-info {
     margin-top: 15px;
     padding: 15px;
@@ -1422,5 +1466,250 @@ tr:hover {
 
     .package-actions button {
         width: 100%;
+    }
+}
+
+/* ===== HAVA DURUMU VE KUR WIDGET ===== */
+.info-widget {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.widget-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.weather-widget #weatherIcon {
+    font-size: 1.3rem;
+}
+
+.weather-widget #weatherTemp {
+    font-weight: bold;
+    color: #f1c40f;
+}
+
+.weather-widget #weatherCity {
+    opacity: 0.8;
+    font-size: 0.85rem;
+}
+
+.currency-widget .currency-label {
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+
+.currency-widget #usdRate,
+.currency-widget #eurRate {
+    font-weight: bold;
+    color: #2ecc71;
+    margin-right: 10px;
+}
+
+/* ===== KISAYOL URUNLER ===== */
+.shortcut-products {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.shortcut-products h3 {
+    color: #2c3e50;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.shortcut-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.shortcut-item {
+    background: #3498db;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    text-align: center;
+}
+
+.shortcut-item:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.shortcut-item .shortcut-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 3px;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shortcut-item .shortcut-price {
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+.empty-shortcuts {
+    color: #999;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* ===== FAVORİ YILDIZ ===== */
+.fav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #ddd;
+    transition: all 0.3s;
+    padding: 5px;
+}
+
+.fav-btn:hover {
+    color: #f1c40f;
+    transform: scale(1.2);
+}
+
+.fav-btn.active {
+    color: #f1c40f;
+}
+
+/* ===== URUN LISTESI MODAL ===== */
+.product-list-modal {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    max-height: 350px;
+    overflow: hidden;
+    z-index: 100;
+    margin-top: 5px;
+}
+
+.product-list-header {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.product-list-header input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+
+.product-list-header input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.product-list-header button {
+    width: 32px;
+    height: 32px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.product-list-header button:hover {
+    background: #c0392b;
+}
+
+.product-list-items {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.product-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.product-list-item:hover {
+    background: #e8f6ff;
+}
+
+.product-list-item:last-child {
+    border-bottom: none;
+}
+
+.product-list-item .product-info-text {
+    flex: 1;
+}
+
+.product-list-item .product-info-text .name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.product-list-item .product-info-text .barcode {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.product-list-item .price {
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.product-list-empty {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+}
+
+/* Barcode section position relative for modal */
+.barcode-section {
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .info-widget {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .widget-item {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .shortcut-items {
+        justify-content: center;
     }
 }

@@ -74,6 +74,23 @@ function handleGet(PDO $pdo): void {
         successResponse($product);
     }
 
+    // Birden fazla ID ile ara (favoriler için)
+    if (isset($_GET['ids'])) {
+        $idsString = sanitizeString($_GET['ids'], 500);
+        $ids = array_filter(array_map('intval', explode(',', $idsString)));
+
+        if (empty($ids)) {
+            successResponse(['items' => []]);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders) AND is_active = 1");
+        $stmt->execute($ids);
+        $products = $stmt->fetchAll();
+
+        successResponse(['items' => $products]);
+    }
+
     // Arama
     $search = isset($_GET['search']) ? sanitizeString($_GET['search'], 100) : '';
     $showInactive = isset($_GET['show_inactive']) && $_GET['show_inactive'] === '1';

@@ -1,8 +1,5 @@
 -- Market Satış Sistemi Veritabanı Şeması
--- Bu dosyayı phpMyAdmin veya MySQL komut satırından çalıştırın
-
-CREATE DATABASE IF NOT EXISTS market_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE market_db;
+-- phpMyAdmin'de veritabaninizi sectikten sonra bu dosyayi ice aktarin
 
 -- Kullanıcılar tablosu
 CREATE TABLE IF NOT EXISTS users (

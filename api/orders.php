@@ -334,6 +334,16 @@ function handleUpdate(PDO $pdo, array $currentUser): void {
                     ]);
                 }
 
+                // Stok düşür (stok > 0 olan ürünlerde)
+                $stokStmt = $pdo->prepare("
+                    UPDATE products
+                    SET stock = stock - ?
+                    WHERE id = ? AND stock > 0
+                ");
+                foreach ($items as $item) {
+                    $stokStmt->execute([$item['quantity'], $item['product_id']]);
+                }
+
                 // Siparis durumunu guncelle
                 $stmt = $pdo->prepare("
                     UPDATE package_orders

@@ -224,6 +224,16 @@ function handlePost(PDO $pdo, array $currentUser): void {
             ]);
         }
 
+        // Stok düşür (stok > 0 olan ürünlerde)
+        $stokStmt = $pdo->prepare("
+            UPDATE products
+            SET stock = stock - ?
+            WHERE id = ? AND stock > 0
+        ");
+        foreach ($validatedItems as $item) {
+            $stokStmt->execute([$item['quantity'], $item['product_id']]);
+        }
+
         Database::commit();
 
         successResponse([
