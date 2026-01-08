@@ -8,7 +8,8 @@ const API = {
     auth: 'api/auth.php',
     products: 'api/products.php',
     sales: 'api/sales.php',
-    orders: 'api/orders.php'
+    orders: 'api/orders.php',
+    settings: 'api/settings.php'
 };
 
 // Uygulama durumu
@@ -130,6 +131,8 @@ function initializeElements() {
     elements.packageModal = document.getElementById('packageModal');
     elements.packageDetails = document.getElementById('packageDetails');
     elements.packageActions = document.getElementById('packageActions');
+    elements.deliveryFeeInput = document.getElementById('deliveryFeeInput');
+    elements.saveDeliveryFeeBtn = document.getElementById('saveDeliveryFeeBtn');
 
     // Widget'lar
     elements.weatherIcon = document.getElementById('weatherIcon');
@@ -245,6 +248,9 @@ function initializeEventListeners() {
     }
     if (elements.refreshPackagesBtn) {
         elements.refreshPackagesBtn.addEventListener('click', loadPackages);
+    }
+    if (elements.saveDeliveryFeeBtn) {
+        elements.saveDeliveryFeeBtn.addEventListener('click', saveDeliveryFee);
     }
 
     // Barkod alanina cift tikla - urun listesi ac
@@ -415,6 +421,9 @@ function showMainApp() {
 
     // Tum urunleri yukle (urun listesi icin)
     loadAllProducts();
+
+    // Paket servis ucretini yukle
+    loadDeliveryFee();
 }
 
 /**
@@ -1880,6 +1889,46 @@ async function selectProductFromList(barcode) {
     closeProductListModal();
     elements.barcodeInput.value = barcode;
     await addToCart();
+}
+
+/**
+ * Paket servis ucretini yukle
+ */
+async function loadDeliveryFee() {
+    if (!elements.deliveryFeeInput) return;
+
+    try {
+        const result = await apiRequest(`${API.settings}?key=delivery_fee`);
+        if (result.success && result.data.value !== null) {
+            elements.deliveryFeeInput.value = parseFloat(result.data.value) || 0;
+        }
+    } catch (error) {
+        console.log('Paket servis ucreti yuklenemedi:', error);
+    }
+}
+
+/**
+ * Paket servis ucretini kaydet
+ */
+async function saveDeliveryFee() {
+    if (!elements.deliveryFeeInput) return;
+
+    const fee = parseFloat(elements.deliveryFeeInput.value) || 0;
+
+    try {
+        const result = await apiRequest(API.settings, 'POST', {
+            key: 'delivery_fee',
+            value: fee.toString()
+        });
+
+        if (result.success) {
+            showNotification('Paket servis ucreti kaydedildi: ' + fee.toFixed(2) + ' TL');
+        } else {
+            showNotification(result.error || 'Kayit basarisiz', 'error');
+        }
+    } catch (error) {
+        showNotification('Hata: ' + error.message, 'error');
+    }
 }
 
 // Global fonksiyonlar (onclick icin)

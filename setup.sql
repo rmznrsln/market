@@ -105,7 +105,24 @@ CREATE TABLE IF NOT EXISTS package_order_items (
     INDEX idx_order (order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Ayarlar tablosu
+CREATE TABLE IF NOT EXISTS settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(50) NOT NULL UNIQUE,
+    setting_value VARCHAR(255),
+    updated_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_key (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Varsayılan admin kullanıcısı (şifre: admin123)
 INSERT INTO users (username, password_hash, full_name, role) VALUES
 ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sistem Yöneticisi', 'admin')
 ON DUPLICATE KEY UPDATE username = username;
+
+-- Varsayılan ayarlar
+INSERT INTO settings (setting_key, setting_value) VALUES
+('delivery_fee', '0')
+ON DUPLICATE KEY UPDATE setting_key = setting_key;

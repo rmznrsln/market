@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/telegram.php';
 
 setCorsHeaders();
 setJsonHeaders();
@@ -73,6 +74,7 @@ function handleCreateOrder(PDO $pdo): void {
     $customerPhone = sanitizeString($input['customer_phone'], 20);
     $customerAddress = trim($input['customer_address']);
     $customerNote = isset($input['customer_note']) ? trim($input['customer_note']) : '';
+    $deliveryFee = isset($input['delivery_fee']) ? getPositiveFloat($input['delivery_fee']) : 0;
 
     if (strlen($customerName) < 2) {
         errorResponse('Gecerli bir isim girin', 400);
@@ -129,6 +131,9 @@ function handleCreateOrder(PDO $pdo): void {
             ];
         }
 
+        // Paket servis ucretini toplama ekle
+        $totalAmount += $deliveryFee;
+
         // Siparis numarasi olustur
         $orderNo = 'PKT-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
@@ -159,6 +164,18 @@ function handleCreateOrder(PDO $pdo): void {
         }
 
         Database::commit();
+
+        // Telegram bildirimi gonder
+        $orderData = [
+            'order_no' => $orderNo,
+            'customer_name' => $customerName,
+            'customer_phone' => $customerPhone,
+            'customer_address' => $customerAddress,
+            'customer_note' => $customerNote,
+            'delivery_fee' => $deliveryFee,
+            'total_amount' => $totalAmount
+        ];
+        sendNewOrderNotification($orderData, $validatedItems);
 
         successResponse([
             'order_id' => $orderId,
@@ -354,6 +371,9 @@ function handleUpdate(PDO $pdo, array $currentUser): void {
 
                 Database::commit();
 
+                // Telegram bildirimi gonder
+                sendOrderStatusNotification($order['order_no'], 'completed', $order['customer_name']);
+
                 successResponse([
                     'sale_id' => $saleId,
                     'message' => 'Siparis tamamlandi ve satisa eklendi'
@@ -367,6 +387,9 @@ function handleUpdate(PDO $pdo, array $currentUser): void {
             // Normal durum guncelleme
             $stmt = $pdo->prepare("UPDATE package_orders SET status = ? WHERE id = ?");
             $stmt->execute([$newStatus, $id]);
+
+            // Telegram bildirimi gonder
+            sendOrderStatusNotification($order['order_no'], $newStatus, $order['customer_name']);
 
             successResponse(null, 'Siparis durumu guncellendi');
         }

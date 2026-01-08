@@ -168,16 +168,26 @@
         <section id="packages" class="tab-content">
             <div class="packages-header">
                 <h2>Bekleyen Paket Siparisler</h2>
-                <div class="packages-filters">
-                    <select id="packageStatusFilter">
-                        <option value="active">Aktif Siparisler</option>
-                        <option value="pending">Bekliyor</option>
-                        <option value="preparing">Hazirlaniyor</option>
-                        <option value="ready">Hazir</option>
-                        <option value="completed">Tamamlandi</option>
-                        <option value="cancelled">Iptal</option>
-                    </select>
-                    <button id="refreshPackagesBtn" class="refresh-btn">Yenile</button>
+                <div class="packages-controls">
+                    <div class="delivery-fee-setting">
+                        <label for="deliveryFeeInput">Paket Servis Ucreti:</label>
+                        <div class="fee-input-group">
+                            <input type="number" id="deliveryFeeInput" min="0" step="0.50" value="0" placeholder="0.00">
+                            <span class="fee-currency">TL</span>
+                            <button id="saveDeliveryFeeBtn" class="save-fee-btn">Kaydet</button>
+                        </div>
+                    </div>
+                    <div class="packages-filters">
+                        <select id="packageStatusFilter">
+                            <option value="active">Aktif Siparisler</option>
+                            <option value="pending">Bekliyor</option>
+                            <option value="preparing">Hazirlaniyor</option>
+                            <option value="ready">Hazir</option>
+                            <option value="completed">Tamamlandi</option>
+                            <option value="cancelled">Iptal</option>
+                        </select>
+                        <button id="refreshPackagesBtn" class="refresh-btn">Yenile</button>
+                    </div>
                 </div>
             </div>
             <div class="packages-grid" id="packagesGrid">

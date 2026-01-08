@@ -69,6 +69,8 @@
 
         .cart-empty { text-align: center; color: #999; padding: 30px; }
 
+        .cart-subtotal { display: flex; justify-content: space-between; padding: 10px 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; }
+        .cart-delivery { display: flex; justify-content: space-between; padding: 10px 15px; background: #e8f5e9; border-radius: 8px; margin-bottom: 8px; color: #2e7d32; }
         .cart-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; padding: 15px; background: #2c3e50; color: white; border-radius: 8px; margin-bottom: 15px; }
 
         .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
@@ -151,6 +153,14 @@
             <div class="cart-items" id="cartItems">
                 <div class="cart-empty">Sepetiniz bos</div>
             </div>
+            <div class="cart-subtotal">
+                <span>Ara Toplam:</span>
+                <span id="cartSubtotal">0.00 TL</span>
+            </div>
+            <div class="cart-delivery" id="deliveryRow" style="display: none;">
+                <span>Paket Servis Ucreti:</span>
+                <span id="deliveryFee">0.00 TL</span>
+            </div>
             <div class="cart-total">
                 <span>Toplam:</span>
                 <span id="cartTotal">0.00 TL</span>
@@ -175,12 +185,37 @@
 
 <script>
 const API_URL = 'api/orders.php';
+const SETTINGS_URL = 'api/settings.php';
 
 let products = [];
 let cart = [];
+let deliveryFee = 0;
 
-// Sayfa yuklenince urunleri cek
-document.addEventListener('DOMContentLoaded', loadProducts);
+// Sayfa yuklenince urunleri ve ayarlari cek
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadDeliveryFee();
+    await loadProducts();
+});
+
+// Paket servis ucretini yukle
+async function loadDeliveryFee() {
+    try {
+        const response = await fetch(`${SETTINGS_URL}?action=public&key=delivery_fee`);
+        const result = await response.json();
+
+        if (result.success && result.data.value !== null) {
+            deliveryFee = parseFloat(result.data.value) || 0;
+
+            // Delivery fee goster
+            if (deliveryFee > 0) {
+                document.getElementById('deliveryRow').style.display = 'flex';
+                document.getElementById('deliveryFee').textContent = deliveryFee.toFixed(2) + ' TL';
+            }
+        }
+    } catch (error) {
+        console.log('Paket servis ucreti yuklenemedi:', error);
+    }
+}
 
 // Urunleri API'den yukle
 async function loadProducts() {
@@ -271,14 +306,25 @@ function removeFromCart(barcode) {
 function renderCart() {
     const cartItems = document.getElementById('cartItems');
     const cartCount = document.getElementById('cartCount');
+    const cartSubtotal = document.getElementById('cartSubtotal');
     const cartTotal = document.getElementById('cartTotal');
+    const deliveryRow = document.getElementById('deliveryRow');
     const submitBtn = document.getElementById('submitBtn');
 
     const totalItems = cart.reduce((sum, c) => sum + c.quantity, 0);
-    const totalPrice = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+    const subtotalPrice = cart.reduce((sum, c) => sum + (c.price * c.quantity), 0);
+    const totalPrice = subtotalPrice + (cart.length > 0 ? deliveryFee : 0);
 
     cartCount.textContent = totalItems;
+    cartSubtotal.textContent = subtotalPrice.toFixed(2) + ' TL';
     cartTotal.textContent = totalPrice.toFixed(2) + ' TL';
+
+    // Delivery fee'yi sepet doluysa goster
+    if (deliveryFee > 0 && cart.length > 0) {
+        deliveryRow.style.display = 'flex';
+    } else if (deliveryFee > 0) {
+        deliveryRow.style.display = 'none';
+    }
 
     if (cart.length === 0) {
         cartItems.innerHTML = '<div class="cart-empty">Sepetiniz bos</div>';
@@ -335,6 +381,7 @@ async function submitOrder() {
                 customer_phone: phone,
                 customer_address: address,
                 customer_note: note,
+                delivery_fee: deliveryFee,
                 items: cart.map(c => ({
                     barcode: c.barcode,
                     quantity: c.quantity

@@ -1218,16 +1218,78 @@ tr:hover {
 /* ===== PAKET SIPARISLER ===== */
 .packages-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 15px;
+    margin-bottom: 20px;
 }
 
 .packages-header h2 {
     color: #2c3e50;
     margin: 0;
+}
+
+.packages-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.delivery-fee-setting {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #e8f5e9;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #a5d6a7;
+}
+
+.delivery-fee-setting label {
+    font-weight: 500;
+    color: #2e7d32;
+    white-space: nowrap;
+}
+
+.fee-input-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fee-input-group input {
+    width: 80px;
+    padding: 8px 10px;
+    border: 1px solid #a5d6a7;
+    border-radius: 5px;
+    font-size: 1rem;
+    text-align: right;
+}
+
+.fee-input-group input:focus {
+    outline: none;
+    border-color: #2e7d32;
+}
+
+.fee-currency {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.save-fee-btn {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.save-fee-btn:hover {
+    background: #1b5e20;
 }
 
 .packages-filters {
