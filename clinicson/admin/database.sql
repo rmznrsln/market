@@ -1,8 +1,8 @@
 -- Hasta Bilgi Formu Veritabanı
 -- MySQL Database Schema
 
--- CREATE DATABASE IF NOT EXISTS markacra_clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
--- USE markacra_clinic_db;
+CREATE DATABASE IF NOT EXISTS clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE clinic_db;
 
 -- Hastalar tablosu
 CREATE TABLE IF NOT EXISTS patients (
